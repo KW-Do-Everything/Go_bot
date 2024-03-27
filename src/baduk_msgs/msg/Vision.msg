@@ -1,0 +1,1 @@
+bool check_vision

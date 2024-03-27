@@ -1,0 +1,10 @@
+msg/Go.idl
+msg/Go.msg
+msg/State.idl
+msg/State.msg
+msg/Vision.idl
+msg/Vision.msg
+srv/Initialize.idl
+srv/Initialize.srv
+srv/Initialize_Request.msg
+srv/Initialize_Response.msg
