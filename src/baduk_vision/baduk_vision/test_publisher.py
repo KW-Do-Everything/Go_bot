@@ -1,16 +1,19 @@
 import rclpy as rp
 from rclpy.node import Node
-from baduk_msgs.msg import Go
+from baduk_msgs.msg import Go, Vision
 
 class TestPulbisher(Node):
     def __init__(self):
         super().__init__('test_publisher')
-        self.publisher = self.create_publisher(Go, 'test_topic', 10)
+        self.publisher = self.create_publisher(Vision, 'check_vision', 10)
         self.timer = self.create_timer(0.5, self.timer_callback)
         self.count = 0
     
     def timer_callback(self):
-        msg = Go()
+        msg = Vision()
+        msg.check_vision = True
+        self.publisher.publish(msg)
+        """msg = Go()
 
         msg.territory = "W+0.5"
 
@@ -35,7 +38,7 @@ class TestPulbisher(Node):
                 msg.re_rate
             )
         )
-        self.count += 1
+        self.count += 1"""
 
 
 def main(args=None):

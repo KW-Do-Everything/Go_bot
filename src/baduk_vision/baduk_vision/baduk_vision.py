@@ -13,15 +13,18 @@ import matplotlib.pyplot as plt
 
 from baduk_vision.VisionModule import *
 
+import threading
+
 class BadukVision(Node):
 
     def __init__(self):
         super().__init__('baduk_vision')
+        self.img_lock = threading.Lock()
 
         # Image subscriber
         self.imgSubscriber = self.create_subscription(
             Image,
-            'image_raw',
+            '/image_raw',
             self.image_callback,
             10
         )
@@ -44,7 +47,6 @@ class BadukVision(Node):
             10
         )
         self.prev_check = False
-        self.subscriptions
 
         # Publisher for game_state
         self.statePublisher = self.create_publisher(
@@ -53,56 +55,85 @@ class BadukVision(Node):
             10
         )
         self.timer = self.create_timer(0.5, self.state_callback)
-        self.game_state = "." * 361
+        self.game_state = "."*361
 
         # topLeft, topRight, bottomRight, bottomLeft
-        self.cornerPoints = np.float32([[147, 29], [486, 45], [600, 440], [30, 433]])
+        # 2560,1440
+        #self.cornerPoints = np.float32([[565, 49], [1755, 37], [2126, 1348], [294, 1425]])
+        # 1280, 720
+        self.cornerPoints = np.float32([[281, 24], [878, 19], [1065, 668], [143, 707]])
 
     def image_callback(self, msg):
         try:
-            # line detect for initialize 나중에 밑 내용은 initialize 관련 함수로 옮길 예정
             self.img = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
             
+            if self.img is not None:
+                self.get_logger().info("Image successfully converted to OpenCV format")
+            else:
+                self.get_logger().error("Failed to convert image")
+                return
+                
             if self.points == None:
                 if not os.path.isfile('./points.json'):
                     self.get_logger().error(f'Initialize First!')
                 else:
                     with open('./points.json', 'r') as jsonfile:
                         self.points = json.load(jsonfile)
+            else:
+                if (self.img.size != 0) and (self.points is not None):
+                    #cv2.imwrite("./check.png", self.img)
+                    img_filtered = homomorphic_filter(self.img)
+                    
+                    img_transformed = perspective(self.cornerPoints, img_filtered)
+                    img_transformed = CLAHE(img_transformed)
+                    
+                    #cv2.imwrite("./writtenImg.jpg", img_transformed)
+                    
+                    _, S, V = cv2.split(cv2.cvtColor(cv2.GaussianBlur(img_transformed, (0, 0), 3), cv2.COLOR_BGR2HSV))
+                    data = np.empty((0, 2))
+                    
+                    self.game_state = ""
+                    for col in self.points:
+                        for (x, y) in col:
+                            pts = [int(x), int(y)]
 
-            H, S, V = cv2.split(cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV))
-            data = np.empty((0, 2))
-            
-            for col in self.points:
-                for (x, y) in col:
-                    pts = [int(x), int(y)]
-
-                    s = np.sum(S[pts[1] - 10:pts[1] + 10, pts[0] - 10:pts[0] + 10]) / 20 ** 2
-                    v = np.sum(V[pts[1] - 10:pts[1] + 10, pts[0] - 10:pts[0] + 10]) / 20 ** 2
-                    data = np.append([s, v], axis=0)
-
-            plt.scatter(data[:, 0], data[:, 1])
-            plt.show()
+                            s = np.sum(S[pts[1] - 5:pts[1] + 6, pts[0] - 5:pts[0] + 6]) / (10 ** 2)
+                            v = np.sum(V[pts[1] - 5:pts[1] + 6, pts[0] - 5:pts[0] + 6]) / (10 ** 2)
+                            data = np.append(data, [[s, v]], axis=0)
+                            if v <= 70:
+                                self.game_state += "b"
+                            elif v >= 180:
+                                self.game_state += "w"
+                            else:
+                                self.game_state += "."
+                print(self.game_state)
+                    
             
         except Exception as e:
             print(e)
             
     def initialize_points(self, req, res):
         if req.do_initialize:
-            img = perspective(self.cornerPoints, self.img)
+            img = homomorphic_filter(self.img)
+            img = perspective(self.cornerPoints, img)
             blur = cv2.GaussianBlur(img, (0, 0), 1)
             gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
             clahe = CLAHE(gray)
             canny = cv2.Canny(clahe, 35, 40)
+            
 
             lines = line_detector(canny)
-            self.points = get_points(lines, 10)
+            self.points = get_points(lines, 30)
 
-            """for (x, y) in self.points:
-                cv2.circle(img, (int(x), int(y)), 1, (255, 0, 0), -1)
+            print(self.points)
 
-            cv2.imshow("vision", img)
-            cv2.waitKey(1)"""
+            test_img = img.copy()
+            for col in self.points:
+                for (x, y) in col:
+                    cv2.circle(test_img, (int(x), int(y)), 5, (255, 0, 0), -1)
+            cv2.imwrite("./points.png", test_img)
+            #cv2.imshow("vision", img)
+            #cv2.waitKey(1)
 
             file = './points.json'
             with open(file, 'w') as json_file:
@@ -110,6 +141,7 @@ class BadukVision(Node):
 
             res.done_initialize = True
 
+            print("Successfully Get Points!")
             return res
         else:
             res.done_initialize = False
@@ -117,15 +149,17 @@ class BadukVision(Node):
             return res
 
     def check_board(self, msg):
-        if(msg.do_check and (not self.prev_check)):
-            # Todo: get coord from file and calc color, save game_state
+        print(msg.check_vision, self.prev_check)
+        if msg.check_vision and (not self.prev_check):
             pass
-        self.prev_check = msg.do_check
     
     def state_callback(self):
         msg = State()
 
         msg.state = self.game_state
+
+        self.statePublisher.publish(msg)
+        #self.get_logger().info(f'{msg.state}')
 
 
 def main(args=None):

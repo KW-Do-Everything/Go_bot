@@ -20,7 +20,7 @@ class ServerUpdater(Node):
         self.last_state_msg = None
         self.subscriber = self.create_subscription(
             State,
-            'game_state_topic',
+            'game_state',
             self.state_listener_callback,
             10
         )
@@ -54,7 +54,7 @@ class ServerUpdater(Node):
     def state_update(self, msg):
         data = msg.state
 
-        self.updater(url, robot_num, "AI", data)
+        self.updater(url, robot_num, "state", data)
 
     def updater(self, url, robot_num, key, data):
         print("update to server!")

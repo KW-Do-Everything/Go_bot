@@ -8,7 +8,7 @@ from sklearn.neighbors._nearest_centroid import NearestCentroid
 
 def line_detector(canny: np.ndarray) -> np.ndarray:
 
-    lines = cv2.HoughLines(canny, 0.5, np.pi/180, 100)
+    lines = cv2.HoughLines(canny, 0.5, np.pi/180, 200)
 
     # 수직/수평선 구분
     #cluster_vh = KMeans(n_clusters=2).fit(lines.squeeze()[:, 1].reshape(len(lines), 1))

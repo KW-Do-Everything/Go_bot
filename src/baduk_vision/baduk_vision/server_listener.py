@@ -20,7 +20,7 @@ class ServerListener(Node):
         self.start = 0
 
     def init_firebase(self):
-        cred = credentials.Certificate("/home/capstone/baduk_robot/src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json")
+        cred = credentials.Certificate("/home/capstone/Go_bot/src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json")
         firebase_admin.initialize_app(cred, {
             'databaseURL': 'https://app-for-baduk-robot-5vzlm0-default-rtdb.asia-southeast1.firebasedatabase.app/'
         })
@@ -29,9 +29,12 @@ class ServerListener(Node):
         
     def firebase_listener(self, event):
         if self.start != 0:
-            self.get_logger().info(f'Firebase data changed: {event.data}')
-            if event.data['init'] == True:
-                self.send_request()
+            self.get_logger().info(f'Firebase data changed: {event.path}')
+            try:
+                if event.data['init'] == True:
+                    self.send_request()
+            except:
+                print("error")
         self.start = 1
 
     def send_request(self):
