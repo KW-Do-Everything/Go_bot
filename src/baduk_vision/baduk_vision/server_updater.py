@@ -17,7 +17,7 @@ class ServerUpdater(Node):
             10
         )
 
-        self.last_state_msg = None
+        self.last_state_msg = "."*361
         self.subscriber = self.create_subscription(
             State,
             'game_state',
@@ -57,7 +57,7 @@ class ServerUpdater(Node):
         self.updater(url, robot_num, "state", data)
 
     def updater(self, url, robot_num, key, data):
-        print("update to server!")
+        print("update to server! -", key, data)
         res = requests.patch(
             f"{url}/{robot_num}.json",
             json={key: data}

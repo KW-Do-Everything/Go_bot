@@ -1,1 +1,1 @@
-
+/home/capstone/Go_bot/build/baduk_msgs/ament_cmake_python/baduk_msgs/baduk_msgs.egg-info/dependency_links.txt

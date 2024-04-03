@@ -1,0 +1,1 @@
+/home/capstone/Go_bot/build/baduk_vision/launch/baduk_vision.launch.py

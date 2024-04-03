@@ -17,10 +17,12 @@ setup(
     maintainer_email='sirius584@naver.com',
     description='TODO: Package description',
     license='TODO: License declaration',
-    tests_require=['pytest'],
+    tests_require=['pytest', 'rclpy', 'numpy'],
     entry_points={
         'console_scripts': [
-            'kata_test = kata_test_pkg.kata_test:main'
+            'kata_test = kata_test_pkg.kata_test:main',
+            'go_game_processor = kata_test_pkg.point_sub_n_gtp_pub:main',
+            'game_state_subsciber = kata_test_pkg.gtp_sub:main'
         ],
     },
 )

@@ -1,1 +1,1 @@
-string state
+/home/capstone/Go_bot/src/baduk_msgs/msg/State.msg

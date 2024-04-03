@@ -1,0 +1,1 @@
+/home/capstone/Go_bot/build/baduk_msgs/rosidl_generator_py/baduk_msgs/__init__.py

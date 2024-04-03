@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = 'baduk_vision'
 
@@ -10,6 +12,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name), glob('launch/*.launch.py'))
+
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -23,7 +27,9 @@ setup(
             'server_updater=baduk_vision.server_updater:main',
             'test_publisher=baduk_vision.test_publisher:main',
             'baduk_vision=baduk_vision.baduk_vision:main',
-            'server_listener=baduk_vision.server_listener:main'
+            'server_listener=baduk_vision.server_listener:main',
+
+            'python_executable_name = pkg_name.python_executable_name:main'
         ],
     },
 )

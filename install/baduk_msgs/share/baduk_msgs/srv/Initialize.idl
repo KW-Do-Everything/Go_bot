@@ -1,15 +1,1 @@
-// generated from rosidl_adapter/resource/srv.idl.em
-// with input from baduk_msgs/srv/Initialize.srv
-// generated code does not contain a copyright notice
-
-
-module baduk_msgs {
-  module srv {
-    struct Initialize_Request {
-      boolean do_initialize;
-    };
-    struct Initialize_Response {
-      boolean done_initialize;
-    };
-  };
-};
+/home/capstone/Go_bot/build/baduk_msgs/rosidl_adapter/baduk_msgs/srv/Initialize.idl

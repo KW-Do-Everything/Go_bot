@@ -30,6 +30,10 @@ class BadukVision(Node):
         )
         self.bridge = CvBridge()
         self.img = None
+        self.gray = None
+        self.prev_gray = None
+        self.pprev_gray = None
+        self.check_color = False
 
         # Service for do_initialize client
         self.initializeService = self.create_service(
@@ -61,35 +65,51 @@ class BadukVision(Node):
         # 2560,1440
         #self.cornerPoints = np.float32([[565, 49], [1755, 37], [2126, 1348], [294, 1425]])
         # 1280, 720
-        self.cornerPoints = np.float32([[281, 24], [878, 19], [1065, 668], [143, 707]])
+        self.cornerPoints = np.float32([[275, 10], [868, 2], [1057, 631], [148, 677]])
+        self.start_flag = True
 
     def image_callback(self, msg):
         try:
             self.img = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
+            self.gray = cv2.cvtColor(perspective(self.cornerPoints, self.img), cv2.COLOR_BGR2GRAY)
+
+            if self.start_flag:
+                self.prev_gray = self.gray
+                self.pprev_gray = self.gray
+                self.start_flag = False
+            
+            flow = cv2.calcOpticalFlowFarneback(self.prev_gray, self.gray, 0.0, 0.5, 3, 15, 3, 5, 1.1, 0)
+            
+            if np.max(flow) > 3:
+                self.check_color = False
+                self.get_logger().info(f'Motion Detected!')
+            else:
+                self.check_color = True
             
             if self.img is not None:
                 self.get_logger().info("Image successfully converted to OpenCV format")
             else:
                 self.get_logger().error("Failed to convert image")
                 return
-                
-            if self.points == None:
+            
+            
+            if self.points is None:
                 if not os.path.isfile('./points.json'):
                     self.get_logger().error(f'Initialize First!')
                 else:
                     with open('./points.json', 'r') as jsonfile:
                         self.points = json.load(jsonfile)
             else:
-                if (self.img.size != 0) and (self.points is not None):
+                if (self.img.size != 0) and (self.points is not None) and self.check_color:
                     #cv2.imwrite("./check.png", self.img)
                     img_filtered = homomorphic_filter(self.img)
                     
                     img_transformed = perspective(self.cornerPoints, img_filtered)
                     img_transformed = CLAHE(img_transformed)
                     
-                    #cv2.imwrite("./writtenImg.jpg", img_transformed)
+                    cv2.imwrite("./writtenImg.jpg", img_transformed)
                     
-                    _, S, V = cv2.split(cv2.cvtColor(cv2.GaussianBlur(img_transformed, (0, 0), 3), cv2.COLOR_BGR2HSV))
+                    _, S, V = cv2.split(cv2.cvtColor(cv2.GaussianBlur(img_transformed, (0, 0), 5), cv2.COLOR_BGR2HSV))
                     data = np.empty((0, 2))
                     
                     self.game_state = ""
@@ -97,16 +117,23 @@ class BadukVision(Node):
                         for (x, y) in col:
                             pts = [int(x), int(y)]
 
-                            s = np.sum(S[pts[1] - 5:pts[1] + 6, pts[0] - 5:pts[0] + 6]) / (10 ** 2)
-                            v = np.sum(V[pts[1] - 5:pts[1] + 6, pts[0] - 5:pts[0] + 6]) / (10 ** 2)
+                            s = np.mean(S[pts[1] - 5:pts[1] + 6, pts[0] - 5:pts[0] + 6]) 
+                            v = np.mean(V[pts[1] - 5:pts[1] + 6, pts[0] - 5:pts[0] + 6])
                             data = np.append(data, [[s, v]], axis=0)
-                            if v <= 70:
+                            if v < 70:
                                 self.game_state += "b"
-                            elif v >= 180:
-                                self.game_state += "w"
                             else:
-                                self.game_state += "."
+                                if s < 40:
+                                    self.game_state += 'w'
+                                else:
+                                    self.game_state += "."
+                    """plt.cla()
+                    plt.scatter(data[:, 0], data[:, 1])
+                    plt.savefig('./test.png')"""
                 print(self.game_state)
+
+            self.pprev_gray = self.prev_gray
+            self.prev_gray = self.gray
                     
             
         except Exception as e:
@@ -156,7 +183,7 @@ class BadukVision(Node):
     def state_callback(self):
         msg = State()
 
-        msg.state = self.game_state
+        msg.state = self.game_state[::-1]
 
         self.statePublisher.publish(msg)
         #self.get_logger().info(f'{msg.state}')

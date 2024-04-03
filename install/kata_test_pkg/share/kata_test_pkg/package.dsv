@@ -1,0 +1,3 @@
+source;share/kata_test_pkg/hook/pythonpath.ps1
+source;share/kata_test_pkg/hook/pythonpath.dsv
+source;share/kata_test_pkg/hook/pythonpath.sh

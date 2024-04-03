@@ -1,5 +1,1 @@
-string territory
-int64[] winrate
-
-string[] re_point
-string[] re_rate
+/home/capstone/Go_bot/src/baduk_msgs/msg/Go.msg

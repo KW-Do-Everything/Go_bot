@@ -1,12 +1,1 @@
-// generated from rosidl_adapter/resource/msg.idl.em
-// with input from baduk_msgs/msg/State.msg
-// generated code does not contain a copyright notice
-
-
-module baduk_msgs {
-  module msg {
-    struct State {
-      string state;
-    };
-  };
-};
+/home/capstone/Go_bot/build/baduk_msgs/rosidl_adapter/baduk_msgs/msg/State.idl
