@@ -1,10 +1,10 @@
 #!/usr/bin/python3
-# EASY-INSTALL-ENTRY-SCRIPT: 'baduk-vision==0.0.0','console_scripts','python_executable_name'
+# EASY-INSTALL-ENTRY-SCRIPT: 'baduk-vision','console_scripts','python_executable_name'
 import re
 import sys
 
 # for compatibility with easy_install; see #2198
-__requires__ = 'baduk-vision==0.0.0'
+__requires__ = 'baduk-vision'
 
 try:
     from importlib.metadata import distribution
@@ -30,4 +30,4 @@ globals().setdefault('load_entry_point', importlib_load_entry_point)
 
 if __name__ == '__main__':
     sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
-    sys.exit(load_entry_point('baduk-vision==0.0.0', 'console_scripts', 'python_executable_name')())
+    sys.exit(load_entry_point('baduk-vision', 'console_scripts', 'python_executable_name')())

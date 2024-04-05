@@ -1,1 +1,3 @@
-/home/capstone/Go_bot/build/baduk_msgs/rosidl_generator_py/baduk_msgs/msg/__init__.py
+from baduk_msgs.msg._go import Go  # noqa: F401
+from baduk_msgs.msg._state import State  # noqa: F401
+from baduk_msgs.msg._vision import Vision  # noqa: F401

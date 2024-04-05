@@ -5,11 +5,27 @@ import cupy as cp
 def CLAHE(img):
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     if len(img.shape) == 3:
+        """
         y, u, v = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2YUV))
         Y = clahe.apply(y)
         return cv2.cvtColor(cv2.merge((Y, u, v)), cv2.COLOR_YUV2BGR)
+        """
+        l, a, b = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2LAB))
+        L = clahe.apply(l)
+        return cv2.cvtColor(cv2.merge((L, a, b)), cv2.COLOR_LAB2BGR)
+        
     else:
         return clahe.apply(img)
+
+
+def HE(img):
+    if len(img.shape) == 3:
+        y, u, v = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2YUV))
+        Y = cv2.equalizeHist(y)
+        return cv2.cvtColor(cv2.merge((Y, u, v)), cv2.COLOR_YUV2BGR)
+    else:
+        return cv2.equalizeHist(img)
+
 
 
 def perspective(cornerPoints, img):

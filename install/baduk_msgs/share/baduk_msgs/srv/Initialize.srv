@@ -1,1 +1,3 @@
-/home/capstone/Go_bot/src/baduk_msgs/srv/Initialize.srv
+bool do_initialize
+---
+bool done_initialize

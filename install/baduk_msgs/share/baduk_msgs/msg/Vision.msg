@@ -1,1 +1,1 @@
-/home/capstone/Go_bot/src/baduk_msgs/msg/Vision.msg
+bool check_vision

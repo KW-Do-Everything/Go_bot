@@ -65,14 +65,15 @@ class BadukVision(Node):
         # 2560,1440
         #self.cornerPoints = np.float32([[565, 49], [1755, 37], [2126, 1348], [294, 1425]])
         # 1280, 720
-        self.cornerPoints = np.float32([[275, 10], [868, 2], [1057, 631], [148, 677]])
+        self.cornerPoints = np.float32([[273, 32], [861, 22], [1053, 647], [143, 700]])
         self.start_flag = True
 
     def image_callback(self, msg):
         try:
             self.img = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
             self.gray = cv2.cvtColor(perspective(self.cornerPoints, self.img), cv2.COLOR_BGR2GRAY)
-
+            b,g,r = v2.split(self.img)
+            
             if self.start_flag:
                 self.prev_gray = self.gray
                 self.pprev_gray = self.gray
@@ -103,13 +104,15 @@ class BadukVision(Node):
                 if (self.img.size != 0) and (self.points is not None) and self.check_color:
                     #cv2.imwrite("./check.png", self.img)
                     img_filtered = homomorphic_filter(self.img)
+                    #img_filtered = homomorphic_filter(img_filtered)
                     
                     img_transformed = perspective(self.cornerPoints, img_filtered)
-                    img_transformed = CLAHE(img_transformed)
+                    #img_transformed = CLAHE(img_transformed)
+                    #img_transformed = HE(img_transformed)
                     
-                    cv2.imwrite("./writtenImg.jpg", img_transformed)
+                    cv2.imwrite("./writtenImg.jpg", cv2.GaussianBlur(img_transformed, (0, 0), 4))
                     
-                    _, S, V = cv2.split(cv2.cvtColor(cv2.GaussianBlur(img_transformed, (0, 0), 5), cv2.COLOR_BGR2HSV))
+                    _, S, V = cv2.split(cv2.cvtColor(cv2.GaussianBlur(img_transformed, (0, 0), 1), cv2.COLOR_BGR2HSV))
                     data = np.empty((0, 2))
                     
                     self.game_state = ""
@@ -117,19 +120,25 @@ class BadukVision(Node):
                         for (x, y) in col:
                             pts = [int(x), int(y)]
 
-                            s = np.mean(S[pts[1] - 5:pts[1] + 6, pts[0] - 5:pts[0] + 6]) 
-                            v = np.mean(V[pts[1] - 5:pts[1] + 6, pts[0] - 5:pts[0] + 6])
+                            s = np.mean(S[pts[1] - 10:pts[1] + 11, pts[0] - 11:pts[0] + 11]) 
+                            v = np.mean(V[pts[1] - 10:pts[1] + 11, pts[0] - 11:pts[0] + 11])
                             data = np.append(data, [[s, v]], axis=0)
                             if v < 70:
                                 self.game_state += "b"
                             else:
-                                if s < 40:
+                                if s < 50:
                                     self.game_state += 'w'
                                 else:
                                     self.game_state += "."
-                    """plt.cla()
+                    
+                    plt.cla()
                     plt.scatter(data[:, 0], data[:, 1])
-                    plt.savefig('./test.png')"""
+                    plt.hlines(70, 0.0, 255, color='gray', linestyle='solid', linewidth=3)
+                    plt.vlines(50, 0.0, 255, color='gray', linestyle='solid', linewidth=3)
+                    plt.xticks(range(0, 255, 10))
+                    plt.yticks(range(0, 255, 10))
+                    plt.grid(True)
+                    plt.savefig('./test.png')
                 print(self.game_state)
 
             self.pprev_gray = self.prev_gray
@@ -157,7 +166,7 @@ class BadukVision(Node):
             test_img = img.copy()
             for col in self.points:
                 for (x, y) in col:
-                    cv2.circle(test_img, (int(x), int(y)), 5, (255, 0, 0), -1)
+                    cv2.circle(test_img, (int(x), int(y)), 10, (255, 0, 0), -1)
             cv2.imwrite("./points.png", test_img)
             #cv2.imshow("vision", img)
             #cv2.waitKey(1)

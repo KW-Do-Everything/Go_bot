@@ -1,1 +1,1 @@
-/home/capstone/Go_bot/build/baduk_msgs/rosidl_cmake/srv/Initialize_Request.msg
+bool do_initialize

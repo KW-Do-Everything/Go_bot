@@ -12,7 +12,7 @@ class ServerUpdater(Node):
         self.last_ai_msg = None
         self.subscriber = self.create_subscription(
             Go,
-            'test_topic',
+            'game_state_topic',
             self.ai_listener_callback,
             10
         )
@@ -24,8 +24,6 @@ class ServerUpdater(Node):
             self.state_listener_callback,
             10
         )
-
-        self.subscriptions
 
     def ai_listener_callback(self, msg):
         # update when data changed

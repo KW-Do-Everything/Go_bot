@@ -1,1 +1,4 @@
-/home/capstone/Go_bot/build/baduk_msgs/ament_cmake_environment_hooks/local_setup.dsv
+source;share/baduk_msgs/environment/ament_prefix_path.sh
+source;share/baduk_msgs/environment/library_path.sh
+source;share/baduk_msgs/environment/path.sh
+source;share/baduk_msgs/environment/pythonpath.sh

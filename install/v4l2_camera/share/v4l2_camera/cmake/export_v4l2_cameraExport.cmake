@@ -54,8 +54,9 @@ endif()
 add_library(v4l2_camera::v4l2_camera SHARED IMPORTED)
 
 set_target_properties(v4l2_camera::v4l2_camera PROPERTIES
+  INTERFACE_COMPILE_DEFINITIONS "ENABLE_CUDA"
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "rclcpp::rclcpp;rclcpp_components::component;rclcpp_components::component_manager;image_transport::image_transport;camera_info_manager::camera_info_manager"
+  INTERFACE_LINK_LIBRARIES "/usr/local/cuda-12.4/lib64/libcudart_static.a;Threads::Threads;dl;/usr/lib/x86_64-linux-gnu/librt.a;/usr/local/cuda-12.4/lib64/libnppicc.so;/usr/local/cuda-12.4/lib64/libnppisu.so;rclcpp::rclcpp;rclcpp_components::component;rclcpp_components::component_manager;image_transport::image_transport;camera_info_manager::camera_info_manager"
 )
 
 # Create imported target v4l2_camera::v4l2_camera_node

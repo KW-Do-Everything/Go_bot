@@ -1,1 +1,2 @@
-/home/capstone/Go_bot/build/baduk_msgs/rosidl_cmake/srv/Initialize_Response.msg
+
+bool done_initialize

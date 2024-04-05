@@ -1,1 +1,1 @@
-/home/capstone/Go_bot/build/baduk_msgs/rosidl_generator_py/baduk_msgs/srv/__init__.py
+from baduk_msgs.srv._initialize import Initialize  # noqa: F401
