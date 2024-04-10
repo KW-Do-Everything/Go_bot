@@ -26,7 +26,7 @@ import select
 # 실행할 외부 프로그램의 경로
 exe_path = '/home/capstone/katago/katago'
 # 외부 프로그램에 전달할 인자, 예를 들어 'gtp' 명령어 
-args = ['gtp', '-model', '/home/yungoon/katago/kata18.bin.gz']
+args = ['gtp', '-model', '/home/capstone/katago/kata18.bin.gz']
 
 #### 뒤에 cfg 옵션 나중에 설정해야함####
 
@@ -35,8 +35,10 @@ args = ['gtp', '-model', '/home/yungoon/katago/kata18.bin.gz']
 
 class gtp():
     def __init__(self):
-        self.process=subprocess.Popen([exe_path] + args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
+        self.process=subprocess.Popen([exe_path] + args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # print("test")
         self.history=[]
+        # print("set history")
 
 
 ######################## 다른 함수에 쓸 read, write 함수 #########
@@ -123,8 +125,11 @@ class gtp():
     def boardsize(self,size=19):
         self.size=size
         self.write("boardsize "+str(size))
+        # print("why")
         answer=self.readline()
-        if answer[0]=="=":return True
+        if answer[0]=="=":
+            # print("hi")
+            return True
         else:return False
 		
     def reset(self):
@@ -470,7 +475,7 @@ def main():
     
     # gtp 클래스 인스턴스 생성
     kata = gtp()
-    
+    print("setting on")
     # 19x19 바둑판 설정
     if kata.boardsize(19):
         print("Board size set to 19x19")
@@ -481,19 +486,21 @@ def main():
 
     # 이름 확인
 
+    time.sleep(5)
 
 
-    # # (D16) 위치에 검은 돌 두기
-    # if kata.place_black(('D16')):
-    #     print("Black stone placed at (D16)")
+
+    # (D16) 위치에 검은 돌 두기
+    if kata.place_black(('D16')):
+        print("Black stone placed at (D16)")
     
 
-    i =0
-    while(i < 5):
-        i +=1
-        print(kata.genmove("w"))
-        # print(kata.lz_analyze( "b", 50 , 5))
-        print(kata.genmove("b"))
+    # i =0
+    # while(i < 5):
+    #     i +=1
+    #     print(kata.genmove("w"))
+    #     # print(kata.lz_analyze( "b", 50 , 5))
+    #     print(kata.genmove("b"))
 
 
     # #있는 기보 불러와서 확인 
