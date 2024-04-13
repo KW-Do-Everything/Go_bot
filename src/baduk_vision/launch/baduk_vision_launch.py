@@ -5,7 +5,7 @@ def generate_launch_description():
     
     return LaunchDescription([
         ExecuteProcess(
-            cmd=["ros2", "run", "v4l2_camera", "v4l2_camera_node", "--ros-args", "-p", "image_size:=[1280,720]"], output="screen"
+            cmd=["ros2", "run", "usb_cam", "usb_cam_node_exe"], output="screen"
         ),
         ExecuteProcess(
             cmd=["ros2", "run", "baduk_vision", "server_listener"], output="screen"

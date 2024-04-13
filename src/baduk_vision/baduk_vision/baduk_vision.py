@@ -59,20 +59,20 @@ class BadukVision(Node):
             10
         )
         self.timer = self.create_timer(0.5, self.state_callback)
-        self.game_state = ""
+        self.game_state = "."*361
 
         # topLeft, topRight, bottomRight, bottomLeft
         # 2560,1440
         #self.cornerPoints = np.float32([[565, 49], [1755, 37], [2126, 1348], [294, 1425]])
         # 1280, 720
-        self.cornerPoints = np.float32([[273, 32], [861, 22], [1053, 647], [143, 700]])
+        #self.cornerPoints = np.float32([[273, 35], [845, 25], [1040, 647], [143, 700]])
+        self.cornerPoints = np.float32([[280, 120], [970, 123], [1154, 926], [98, 928]])
         self.start_flag = True
 
     def image_callback(self, msg):
         try:
             self.img = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
             self.gray = cv2.cvtColor(perspective(self.cornerPoints, self.img), cv2.COLOR_BGR2GRAY)
-            b,g,r = cv2.split(self.img)
             
             if self.start_flag:
                 self.prev_gray = self.gray
@@ -81,7 +81,7 @@ class BadukVision(Node):
             
             flow = cv2.calcOpticalFlowFarneback(self.prev_gray, self.gray, 0.0, 0.5, 3, 15, 3, 5, 1.1, 0)
             
-            if np.max(flow) > 4:
+            if np.max(flow) > 3:
                 self.check_color = False
                 self.get_logger().info(f'Motion Detected!')
             else:
@@ -92,7 +92,6 @@ class BadukVision(Node):
             else:
                 self.get_logger().error("Failed to convert image")
                 return
-            
             
             if self.points is None:
                 if not os.path.isfile('./points.json'):
@@ -106,10 +105,16 @@ class BadukVision(Node):
                     img_filtered = homomorphic_filter(self.img)
                     #img_filtered = homomorphic_filter(img_filtered)
                     
+                    #img_transformed = perspective(self.cornerPoints, self.img)
                     img_transformed = perspective(self.cornerPoints, img_filtered)
-                    img_transformed = CLAHE(img_transformed)
+                    #img_transformed = CLAHE(img_transformed)
                     #img_transformed = HE(img_transformed)
                     
+                    #fast = cv2.FastFeatureDetector_create(60)
+                    #keypoints = fast.detect(cv2.cvtColor(img_transformed, cv2.COLOR_BGR2GRAY))
+                    #for kp in keypoints:
+                    #    pt = (int(kp.pt[0]), int(kp.pt[1]))
+                    #    cv2.circle(img_transformed, pt, 5, (0, 255, 0), 2)
 
                     cv2.imwrite("./writtenImg.jpg", cv2.threshold(cv2.cvtColor(img_transformed, cv2.COLOR_BGR2GRAY), 140, 255, cv2.THRESH_BINARY)[1])
                     cv2.imwrite("./testImg.jpg", img_transformed)
@@ -125,10 +130,10 @@ class BadukVision(Node):
                             s = np.mean(S[pts[1] - 10:pts[1] + 11, pts[0] - 10:pts[0] + 11]) 
                             v = np.mean(V[pts[1] - 10:pts[1] + 11, pts[0] - 10:pts[0] + 11])
                             data = np.append(data, [[s, v]], axis=0)
-                            if v < 50:
+                            if v < 80:
                                 self.game_state += "b"
                             else:
-                                if s < 30:
+                                if s < 70:
                                     self.game_state += 'w'
                                 else:
                                     self.game_state += "."
@@ -194,7 +199,7 @@ class BadukVision(Node):
     def state_callback(self):
         msg = State()
 
-        msg.state = self.game_state[::-1]
+        msg.state = self.game_state[:: -1]
 
         self.statePublisher.publish(msg)
         #self.get_logger().info(f'{msg.state}')

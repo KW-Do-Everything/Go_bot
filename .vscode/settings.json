@@ -1,3 +1,25 @@
 {
-    "ros.distro": "humble"
+    "ros.distro": "humble",
+    "python.autoComplete.extraPaths": [
+        "/home/capstone/Go_bot/install/test410_description/lib/python3.10/site-packages",
+        "/home/capstone/Go_bot/install/kata_test_pkg/lib/python3.10/site-packages",
+        "/home/capstone/Go_bot/install/kata_pkg/lib/python3.10/site-packages",
+        "/home/capstone/Go_bot/install/joint1_v2_test_description/lib/python3.10/site-packages",
+        "/home/capstone/Go_bot/install/jebal/lib/python3.10/site-packages",
+        "/home/capstone/Go_bot/install/baduk_vision/lib/python3.10/site-packages",
+        "/home/capstone/Go_bot/install/baduk_msgs/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/capstone/Go_bot/install/test410_description/lib/python3.10/site-packages",
+        "/home/capstone/Go_bot/install/kata_test_pkg/lib/python3.10/site-packages",
+        "/home/capstone/Go_bot/install/kata_pkg/lib/python3.10/site-packages",
+        "/home/capstone/Go_bot/install/joint1_v2_test_description/lib/python3.10/site-packages",
+        "/home/capstone/Go_bot/install/jebal/lib/python3.10/site-packages",
+        "/home/capstone/Go_bot/install/baduk_vision/lib/python3.10/site-packages",
+        "/home/capstone/Go_bot/install/baduk_msgs/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
 }

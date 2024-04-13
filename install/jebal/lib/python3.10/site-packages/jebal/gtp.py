@@ -26,7 +26,7 @@ import select
 # 실행할 외부 프로그램의 경로
 exe_path = '/home/capstone/katago/katago'
 # 외부 프로그램에 전달할 인자, 예를 들어 'gtp' 명령어 
-args = ['gtp', '-model', '/home/capstone/katago/kata18.bin.gz']
+args = ['gtp', '-model', '/home/capstone/katago/KataGo6b.gz']
 
 #### 뒤에 cfg 옵션 나중에 설정해야함####
 

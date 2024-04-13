@@ -29,7 +29,7 @@ class ServerListener(Node):
         
     def firebase_listener(self, event):
         if self.start != 0:
-            self.get_logger().info(f'Firebase data changed: {event.path}')
+            self.get_logger().info(f'Firebase data changed: {event.data}')
             try:
                 if event.data['init'] == True:
                     self.send_request()
