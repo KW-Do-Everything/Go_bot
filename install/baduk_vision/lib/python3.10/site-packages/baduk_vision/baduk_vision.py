@@ -66,7 +66,7 @@ class BadukVision(Node):
         #self.cornerPoints = np.float32([[565, 49], [1755, 37], [2126, 1348], [294, 1425]])
         # 1280, 720
         #self.cornerPoints = np.float32([[273, 35], [845, 25], [1040, 647], [143, 700]])
-        self.cornerPoints = np.float32([[280, 120], [970, 123], [1154, 926], [98, 928]])
+        self.cornerPoints = np.float32([[310, 98], [994, 124], [1142, 920], [104, 872]])
         self.start_flag = True
 
     def image_callback(self, msg):
@@ -81,7 +81,7 @@ class BadukVision(Node):
             
             flow = cv2.calcOpticalFlowFarneback(self.prev_gray, self.gray, 0.0, 0.5, 3, 15, 3, 5, 1.1, 0)
             
-            if np.max(flow) > 3:
+            if np.max(flow) > 2:
                 self.check_color = False
                 self.get_logger().info(f'Motion Detected!')
             else:
@@ -102,21 +102,19 @@ class BadukVision(Node):
             else:
                 if (self.img.size != 0) and (self.points is not None) and self.check_color:
                     #cv2.imwrite("./check.png", self.img)
-                    img_filtered = homomorphic_filter(self.img)
+                    #img_filtered = homomorphic_filter(self.img)
                     #img_filtered = homomorphic_filter(img_filtered)
+                    #cv2.imwrite("./homoImg.jpg", img_filtered)
                     
-                    #img_transformed = perspective(self.cornerPoints, self.img)
-                    img_transformed = perspective(self.cornerPoints, img_filtered)
+                    img_transformed = perspective(self.cornerPoints, self.img)
+                    img_transformed = homomorphic_filter(img_transformed)
+                    
+                    #img_transformed = perspective(self.cornerPoints, img_filtered)
+
                     #img_transformed = CLAHE(img_transformed)
                     #img_transformed = HE(img_transformed)
-                    
-                    #fast = cv2.FastFeatureDetector_create(60)
-                    #keypoints = fast.detect(cv2.cvtColor(img_transformed, cv2.COLOR_BGR2GRAY))
-                    #for kp in keypoints:
-                    #    pt = (int(kp.pt[0]), int(kp.pt[1]))
-                    #    cv2.circle(img_transformed, pt, 5, (0, 255, 0), 2)
 
-                    cv2.imwrite("./writtenImg.jpg", cv2.threshold(cv2.cvtColor(img_transformed, cv2.COLOR_BGR2GRAY), 140, 255, cv2.THRESH_BINARY)[1])
+                    #cv2.imwrite("./writtenImg.jpg", cv2.threshold(cv2.cvtColor(img_transformed, cv2.COLOR_BGR2GRAY), 140, 255, cv2.THRESH_BINARY)[1])
                     cv2.imwrite("./testImg.jpg", img_transformed)
                     
                     _, S, V = cv2.split(cv2.cvtColor(cv2.GaussianBlur(img_transformed, (0, 0), 1), cv2.COLOR_BGR2HSV))
@@ -133,7 +131,7 @@ class BadukVision(Node):
                             if v < 80:
                                 self.game_state += "b"
                             else:
-                                if s < 70:
+                                if s < 80:
                                     self.game_state += 'w'
                                 else:
                                     self.game_state += "."
@@ -167,6 +165,24 @@ class BadukVision(Node):
 
             lines = line_detector(canny)
             self.points = get_points(lines, 30)
+            """
+            limg = img.copy()
+            for l in lines:
+                print(l)
+                for rho, theta in l:
+                    a = np.cos(theta)
+                    b = np.sin(theta)
+                    x0 = a*rho
+                    y0 = b*rho
+                    x1 = int(x0 + 10000*(-b))
+                    y1 = int(y0+10000*(a))
+                    x2 = int(x0 - 10000*(-b))
+                    y2 = int(y0 -10000*(a))
+
+                    cv2.line(limg,(x1,y1),(x2,y2),(0,255,0),2)
+
+            cv2.imwrite("./lineImg.jpg", limg)
+            """
 
             print(self.points)
 
