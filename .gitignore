@@ -5,6 +5,6 @@ src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.j
 
 gtp_logs/
 
-*.png
-*.jpg
-points.json
+/*.png
+/*.jpg
+/points.json
