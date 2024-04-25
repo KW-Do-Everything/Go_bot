@@ -11,6 +11,11 @@ import os.path
 import os
 import matplotlib.pyplot as plt
 
+import torch
+from torchvision import transforms
+from PIL import Image as PILImage
+import baduk_vision.VisionModule.letnetgo as letnetgo
+
 from baduk_vision.VisionModule import *
 
 import threading
@@ -24,7 +29,7 @@ class BadukVision(Node):
         # Image subscriber
         self.imgSubscriber = self.create_subscription(
             Image,
-            '/image_raw',
+            'image_raw',
             self.image_callback,
             10
         )
@@ -34,6 +39,10 @@ class BadukVision(Node):
         self.prev_gray = None
         self.pprev_gray = None
         self.check_color = False
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = letnetgo.LeNetGo()
+        self.model.load_state_dict(torch.load('./model/lenet5_model.pth'))
+        self.model.to(self.device)
 
         # Service for do_initialize client
         self.initializeService = self.create_service(
@@ -107,7 +116,7 @@ class BadukVision(Node):
                     #cv2.imwrite("./homoImg.jpg", img_filtered)
                     
                     img_transformed = perspective(self.cornerPoints, self.img)
-                    img_transformed = homomorphic_filter(img_transformed)
+                    #img_transformed = homomorphic_filter(img_transformed)
                     
                     #img_transformed = perspective(self.cornerPoints, img_filtered)
 
@@ -120,11 +129,43 @@ class BadukVision(Node):
                     _, S, V = cv2.split(cv2.cvtColor(cv2.GaussianBlur(img_transformed, (0, 0), 1), cv2.COLOR_BGR2HSV))
                     data = np.empty((0, 2))
                     
+                    transform = transforms.Compose([
+                        transforms.Resize((32,32)),
+                        transforms.Grayscale(num_output_channels=1),
+                        transforms.ToTensor(),
+                        transforms.Normalize((0.5,), (0.5,))
+                    ])
+
                     self.game_state = ""
                     for col in self.points:
                         for (x, y) in col:
                             pts = [int(x), int(y)]
 
+                            x1 = max(0, x - 12)
+                            y1 = max(0, y - 12)
+                            x2 = min(self.img.shape[1], x + 13) 
+                            y2 = min(self.img.shape[0], y + 13)
+
+                            cropped = cv2.GaussianBlur(self.gray[int(y1):int(y2), int(x1):int(x2)], (0,0), 3)
+                            
+                            image = PILImage.fromarray(cropped)
+                            image = transform(image).unsqueeze(0)
+
+                            image = image.to(self.device)
+
+                            with torch.no_grad():
+                                outputs = self.model(image)
+
+                            if outputs > 0.3:
+                                self.game_state += "."
+                            else:
+                                I = np.mean(cropped)
+                                if I < 100:
+                                    self.game_state += "b"
+                                else:
+                                    self.game_state += "w"
+
+                            """
                             s = np.mean(S[pts[1] - 10:pts[1] + 11, pts[0] - 10:pts[0] + 11]) 
                             v = np.mean(V[pts[1] - 10:pts[1] + 11, pts[0] - 10:pts[0] + 11])
                             data = np.append(data, [[s, v]], axis=0)
@@ -144,6 +185,7 @@ class BadukVision(Node):
                     plt.yticks(range(0, 255, 10))
                     plt.grid(True)
                     plt.savefig('./test.png')
+                    """
                 print(self.game_state)
 
             self.pprev_gray = self.prev_gray
@@ -189,7 +231,7 @@ class BadukVision(Node):
             test_img = img.copy()
             for col in self.points:
                 for (x, y) in col:
-                    cv2.circle(test_img, (int(x), int(y)), 10, (255, 0, 0), -1)
+                    cv2.circle(test_img, (int(x), int(y)), 12, (255, 0, 0), -1)
             cv2.imwrite("./points.png", test_img)
             #cv2.imshow("vision", img)
             #cv2.waitKey(1)
