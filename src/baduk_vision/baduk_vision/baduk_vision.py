@@ -40,8 +40,8 @@ class BadukVision(Node):
         self.pprev_gray = None
         self.check_color = False
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = letnetgo.LeNetGo()
-        self.model.load_state_dict(torch.load('./model/lenet5_model.pth'))
+        self.model = letnetgo.LeNetGo3()
+        self.model.load_state_dict(torch.load('./model/lenetgo_model_epoch57.pth'))
         self.model.to(self.device)
 
         # Service for do_initialize client
@@ -70,11 +70,6 @@ class BadukVision(Node):
         self.timer = self.create_timer(0.5, self.state_callback)
         self.game_state = "."*361
 
-        # topLeft, topRight, bottomRight, bottomLeft
-        # 2560,1440
-        #self.cornerPoints = np.float32([[565, 49], [1755, 37], [2126, 1348], [294, 1425]])
-        # 1280, 720
-        #self.cornerPoints = np.float32([[273, 35], [845, 25], [1040, 647], [143, 700]])
         self.cornerPoints = np.float32([[310, 98], [994, 124], [1142, 920], [104, 872]])
         self.start_flag = True
 
@@ -110,24 +105,10 @@ class BadukVision(Node):
                         self.points = json.load(jsonfile)
             else:
                 if (self.img.size != 0) and (self.points is not None) and self.check_color:
-                    #cv2.imwrite("./check.png", self.img)
-                    #img_filtered = homomorphic_filter(self.img)
-                    #img_filtered = homomorphic_filter(img_filtered)
-                    #cv2.imwrite("./homoImg.jpg", img_filtered)
                     
                     img_transformed = perspective(self.cornerPoints, self.img)
-                    #img_transformed = homomorphic_filter(img_transformed)
                     
-                    #img_transformed = perspective(self.cornerPoints, img_filtered)
-
-                    #img_transformed = CLAHE(img_transformed)
-                    #img_transformed = HE(img_transformed)
-
-                    #cv2.imwrite("./writtenImg.jpg", cv2.threshold(cv2.cvtColor(img_transformed, cv2.COLOR_BGR2GRAY), 140, 255, cv2.THRESH_BINARY)[1])
                     cv2.imwrite("./testImg.jpg", img_transformed)
-                    
-                    _, S, V = cv2.split(cv2.cvtColor(cv2.GaussianBlur(img_transformed, (0, 0), 1), cv2.COLOR_BGR2HSV))
-                    data = np.empty((0, 2))
                     
                     transform = transforms.Compose([
                         transforms.Resize((32,32)),
@@ -139,7 +120,6 @@ class BadukVision(Node):
                     self.game_state = ""
                     for col in self.points:
                         for (x, y) in col:
-                            pts = [int(x), int(y)]
 
                             x1 = max(0, x - 12)
                             y1 = max(0, y - 12)
@@ -156,36 +136,14 @@ class BadukVision(Node):
                             with torch.no_grad():
                                 outputs = self.model(image)
 
-                            if outputs > 0.3:
-                                self.game_state += "."
+                            output = torch.argmax(outputs)
+                            if output == 0:
+                                state += 'b'
+                            elif output == 1:
+                                state += '.'
                             else:
-                                I = np.mean(cropped)
-                                if I < 100:
-                                    self.game_state += "b"
-                                else:
-                                    self.game_state += "w"
+                                state += 'w'
 
-                            """
-                            s = np.mean(S[pts[1] - 10:pts[1] + 11, pts[0] - 10:pts[0] + 11]) 
-                            v = np.mean(V[pts[1] - 10:pts[1] + 11, pts[0] - 10:pts[0] + 11])
-                            data = np.append(data, [[s, v]], axis=0)
-                            if v < 80:
-                                self.game_state += "b"
-                            else:
-                                if s < 80:
-                                    self.game_state += 'w'
-                                else:
-                                    self.game_state += "."
-                    
-                    plt.cla()
-                    plt.scatter(data[:, 0], data[:, 1])
-                    #plt.hlines(90, 0.0, 255, color='gray', linestyle='solid', linewidth=3)
-                    #plt.vlines(30, 0.0, 255, color='gray', linestyle='solid', linewidth=3)
-                    plt.xticks(range(0, 255, 10))
-                    plt.yticks(range(0, 255, 10))
-                    plt.grid(True)
-                    plt.savefig('./test.png')
-                    """
                 print(self.game_state)
 
             self.pprev_gray = self.prev_gray
@@ -207,25 +165,7 @@ class BadukVision(Node):
 
             lines = line_detector(canny)
             self.points = get_points(lines, 30)
-            """
-            limg = img.copy()
-            for l in lines:
-                print(l)
-                for rho, theta in l:
-                    a = np.cos(theta)
-                    b = np.sin(theta)
-                    x0 = a*rho
-                    y0 = b*rho
-                    x1 = int(x0 + 10000*(-b))
-                    y1 = int(y0+10000*(a))
-                    x2 = int(x0 - 10000*(-b))
-                    y2 = int(y0 -10000*(a))
-
-                    cv2.line(limg,(x1,y1),(x2,y2),(0,255,0),2)
-
-            cv2.imwrite("./lineImg.jpg", limg)
-            """
-
+           
             print(self.points)
 
             test_img = img.copy()
@@ -233,8 +173,6 @@ class BadukVision(Node):
                 for (x, y) in col:
                     cv2.circle(test_img, (int(x), int(y)), 12, (255, 0, 0), -1)
             cv2.imwrite("./points.png", test_img)
-            #cv2.imshow("vision", img)
-            #cv2.waitKey(1)
 
             file = './points.json'
             with open(file, 'w') as json_file:
