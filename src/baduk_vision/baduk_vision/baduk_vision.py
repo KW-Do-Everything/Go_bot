@@ -37,13 +37,10 @@ class BadukVision(Node):
         self.img = None
         self.gray = None
         self.prev_gray = None
-        self.pprev_gray = None
         self.check_color = False
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        #self.model = lenetgo.LeNetGo3()
-        #self.model.load_state_dict(torch.load('./model/lenetgo_model_epoch74.pth'))
         self.model = lenetgo.LeNetGo2()
-        self.model.load_state_dict(torch.load('/home/capstone/Go_bot/model/lenetgo_model_epoch30.pth')) #13 canny, 11 otsu
+        self.model.load_state_dict(torch.load('/home/capstone/Go_bot/model/lenetgo_model_epoch30.pth'))
         self.model.to(self.device)
         self.transform = transforms.Compose([
                             transforms.Resize((32,32)),
@@ -81,12 +78,6 @@ class BadukVision(Node):
         self.cornerPoints = np.float32([[326, 104], [1020, 112], [1210, 914], [150, 900]])
         self.start_flag = True
 
-    def otsu_binarization(self, img):
-        np_img = np.array(img)
-        #np_img = cv2.Canny(np_img, 25, 100)
-        _, otsu = cv2.threshold(np_img, 0, 1, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        return PILImage.fromarray((otsu * 255).astype(np.uint8))
-
     def image_callback(self, msg):
         try:
             self.img = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
@@ -94,7 +85,6 @@ class BadukVision(Node):
             
             if self.start_flag:
                 self.prev_gray = self.gray
-                self.pprev_gray = self.gray
                 self.start_flag = False
             
             flow = cv2.calcOpticalFlowFarneback(self.prev_gray, self.gray, 0.0, 0.5, 3, 15, 3, 5, 1.1, 0)
@@ -119,50 +109,10 @@ class BadukVision(Node):
                         self.points = json.load(jsonfile)
             else:
                 if (self.img.size != 0) and (self.points is not None) and self.check_color:
-                    
-                    img_transformed = perspective(self.cornerPoints, self.img)
-                    
-                    cv2.imwrite("/home/capstone/Go_bot/testImg.jpg", img_transformed)
-                    
-                    self.game_state = ""
-                    for col in self.points:
-                        for (x, y) in col:
-
-                            x1 = max(0, x - 15)
-                            y1 = max(0, y - 15)
-                            x2 = min(self.img.shape[1], x + 16) 
-                            y2 = min(self.img.shape[0], y + 16)
-
-                            cropped = self.gray[int(y1):int(y2), int(x1):int(x2)]
+                    self.game_state = color_classifier(self.img, self.gray, {device: self.device, transform: self.transform, model: self.model})
                             
-                            image = PILImage.fromarray(cropped)
-                            image = self.transform(image).unsqueeze(0)
-
-                            image = image.to(self.device)
-
-                            with torch.no_grad():
-                                outputs = self.model(image)
-
-                            """
-                            output = torch.argmax(outputs)
-                            if output == 0:
-                                self.game_state += 'b'
-                            elif output == 1:
-                                self.game_state += '.'
-                            else:
-                                self.game_state += 'w'
-                            """
-                            output = outputs[0][0].item()
-                            if output < 0.5:
-                                if np.mean(cropped) > 150:
-                                    self.game_state += "w"
-                                else:
-                                    self.game_state += "b"
-                            else:
-                                self.game_state += '.'
                 self.get_logger().info("state: "+ self.game_state)
 
-            self.pprev_gray = self.prev_gray
             self.prev_gray = self.gray
                     
             
@@ -171,14 +121,11 @@ class BadukVision(Node):
             
     def initialize_points(self, req, res):
         if req.do_initialize:
-            #img = homomorphic_filter(self.img)
             img = perspective(self.cornerPoints, self.img)
             blur = cv2.GaussianBlur(img, (0, 0), 1)
             gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
-            #clahe = CLAHE(gray)
             canny = cv2.Canny(gray, 35, 40)
             
-
             lines = line_detector(canny)
             self.points = get_points(lines, 30)
            

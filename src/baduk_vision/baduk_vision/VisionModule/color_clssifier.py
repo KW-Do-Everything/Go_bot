@@ -1,19 +1,51 @@
 import cv2
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.cluster import DBSCAN
+import torch
+from PIL import Image as PILImage
 
 
-def color_classifier(img: np.ndarray, points: list):
-    out_img = []
-
-    _, S, V = cv2.split(cv2.cvtColor(cv2.GaussianBlur(img, (0, 0), 3), cv2.COLOR_BGR2HSV))
+def color_classifier(img: np.ndarray, gray: np.ndarray, torch_utils, points: list) -> str:
+    """
+    입력
+        img: 입력 영상
+        gray: 입력 영상의 grayscale
+        torch_utils: {device, transform, model} (dict)
+        points: 바둑판 교점 좌표
+    출력
+        game_state: str 361자리 문자열
+    """
+    img_transformed = perspective(self.cornerPoints, self.img)
+    cv2.imwrite("/home/capstone/Go_bot/testImg.jpg", img_transformed)
+    
+    game_state = ""
     for col in points:
         for (x, y) in col:
-            pts = [int(x), int(y)]
 
-            s = np.sum(S[pts[1] - 15:pts[1] + 15, pts[0] - 15:pts[0] + 15]) / 15 ** 2
-            v = np.sum(V[pts[1] - 15:pts[1] + 15, pts[0] - 15:pts[0] + 15]) / 15 ** 2
-            out_img.append([s, v])
+            x1 = max(0, x - 15)
+            y1 = max(0, y - 15)
+            x2 = min(img_transformed.shape[1], x + 16) 
+            y2 = min(img_transformed.shape[0], y + 16)
+
+            cropped = gray[int(y1):int(y2), int(x1):int(x2)]
+            
+            image = PILImage.fromarray(cropped)
+            image = torch_utils.transform(image).unsqueeze(0)
+
+            image = image.to(torch_utils.device)
+
+            with torch.no_grad():
+                outputs = torch_utils.model(image)
+                
+            output = outputs[0][0].item()
+
+            if output < 0.5:
+                if np.mean(cropped) > 150:
+                    game_state += "w"
+                else:
+                    game_state += "b"
+            else:
+                game_state += '.'
+
+    return game_state
 
     
