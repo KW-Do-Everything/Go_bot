@@ -1,7 +1,0 @@
-{
-    "port": "/dev/ttyACM0",
-    "configuration": "upload_method=UploadMethod",
-    "board": "OpenCR:OpenCR:OpenCR",
-    "sketch": "Go_bot.ino",
-    "programmer": "dfu_util"
-}
