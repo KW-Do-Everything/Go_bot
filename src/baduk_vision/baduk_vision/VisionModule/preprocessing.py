@@ -2,7 +2,17 @@ import cv2
 import numpy as np
 import cupy as cp
 
-def CLAHE(img):
+
+# Contrast Limited Adaptive Histogram Equalization
+def CLAHE(img: np.ndarray) -> np.ndarray:
+    """
+    입력
+        img: 이미지
+    출력
+        np.ndarray: clahe 적용한 이미지
+    
+    RGB 이미지에 대해서는 밝기 채널에만 적용.
+    """
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     if len(img.shape) == 3:
         """
@@ -18,7 +28,16 @@ def CLAHE(img):
         return clahe.apply(img)
 
 
-def HE(img):
+# Histogram Equalization
+def HE(img: np.ndarray) -> np.ndarray:
+    """
+    입력
+        img: 이미지
+    출력
+        np.ndarray: he 적용한 이미지
+    
+    RGB 이미지에 대해서는 밝기 채널에만 적용.
+    """
     if len(img.shape) == 3:
         y, u, v = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2YUV))
         Y = cv2.equalizeHist(y)
@@ -27,8 +46,17 @@ def HE(img):
         return cv2.equalizeHist(img)
 
 
-
-def perspective(cornerPoints, img):
+# perspective 변환 
+def perspective(cornerPoints: np.ndarray, img: np.ndarray) -> np.ndarray:
+    """
+    입력
+        cornerPoints: 변환 이미지의 네 귀퉁이(좌상단 부터 시계 방향으로)
+        img: 이미지
+    출력
+        np.ndarray: he 적용한 이미지
+    
+    RGB 이미지에 대해서는 밝기 채널에만 적용.
+    """
     topLeft = cornerPoints[0]
     topRight = cornerPoints[1]
     bottomRight = cornerPoints[2]
@@ -48,7 +76,8 @@ def perspective(cornerPoints, img):
     return cv2.warpPerspective(img, mtrx, (width, height))
 
 
-def homomorphic_filter(img):
+# 조명 제거를 위한 호모모픽 필터 (사용안할 듯)
+def homomorphic_filter(img: np.ndarray) -> np.ndarray:
     img_YUV = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
     y = img_YUV[:, :, 0]
 

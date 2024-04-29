@@ -88,10 +88,12 @@ def get_points(lines: np.ndarray, threshold: float) -> list:
         x1, y1 = map(int, topLeft)
         x2, y2 = map(int, topRight)
 
+        # 모든 교점을 순회
         for point in intersectionsF:
 
             x, y = map(int, point)
 
+            # 한 점과 직선 사이의 거리
             dist = abs((x2 - x1) * y - (y2 - y1) * x + (-(x2 - x1) * y1 + (y2 - y1) * x1)) / np.sqrt(
                 (x2 - x1) ** 2 + (y2 - y1) ** 2)
 
@@ -99,21 +101,7 @@ def get_points(lines: np.ndarray, threshold: float) -> list:
                 row.append(point.tolist())
             else:
                 remain_points.append(point)
-        """
-        # 한줄에 19개의 점이 검출되었는지 확인
-        tmp = []
-        check = [False for i in range(len(row))]
-        if len(row) > 19:
-
-            for i in range(len(row) - 1):
-                if not check[i]:
-                    tmp.append(row[i])
-                for j in range(i + 1, len(row)):
-                    dist = np.sqrt((row[i][0] - row[j][0]) ** 2 + (row[i][1] - row[j][1]) ** 2)
-                    if dist < mean_radius:
-                        check[j] = True
-            row = tmp
-        """
+                
         points.append(sorted(row, key=lambda x: x[0]))
 
         intersectionsF = remain_points

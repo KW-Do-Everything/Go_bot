@@ -2,10 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# LeNet5의 출력층 노드를 1개로 만들고, 활성화 함수를 sigmoid로 바꾼 모델
 class LeNetGo2(nn.Module):
     def __init__(self):
         super(LeNetGo2, self).__init__()
-        self.conv1 = nn.Conv2d(1, 6, 5)  # 입력 채널을 이미지 채널 수에 맞춰 변경
+        self.conv1 = nn.Conv2d(1, 6, 5) 
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
