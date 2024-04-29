@@ -30,12 +30,13 @@ class ServerUpdater(Node):
         if self.last_ai_msg != msg:
             self.ai_update(msg)
             self.last_ai_msg = msg
-
+    
     def state_listener_callback(self, msg):
         if self.last_state_msg != msg:
             self.state_update(msg)
             self.last_state_msg = msg
     
+    # AI 분석 업데이트
     def ai_update(self, msg):
         re = []
         for i in range(5):
@@ -49,11 +50,13 @@ class ServerUpdater(Node):
         
         self.updater(url, robot_num, "AI", data)
 
+    # 바둑판 상황 업데이트
     def state_update(self, msg):
         data = msg.state
 
         self.updater(url, robot_num, "state", data)
 
+    # Firebase 실시간 데이터 베이스에 데이터 업데이트
     def updater(self, url, robot_num, key, data):
         print("update to server! -", key, data)
         res = requests.patch(

@@ -14,11 +14,12 @@ class ServerListener(Node):
     def __init__(self):
         super().__init__('server_listener')
 
-        self.start = 0
+        self.start = True
         self.listenerClient = self.create_client(Initialize, 'do_initialize')
         self.req = Initialize.Request()
         self.init_firebase()
 
+    # Firebase 초기화
     def init_firebase(self):
         cred = credentials.Certificate("/home/capstone/Go_bot/src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json")
         firebase_admin.initialize_app(cred, {
@@ -26,17 +27,30 @@ class ServerListener(Node):
         })
         ref = db.reference('Robots/'+robot_num)
         ref.listen(self.firebase_listener)
-        
+    
+    # Firebase Listner
+    # 실시간 데이터베이스에 변경점이 있으면 감지하는 함수
     def firebase_listener(self, event):
-        if self.start != 0:
+        if self.start == True:
             self.get_logger().info(f'Firebase data changed: {event.data}')
             try:
+                # 앱에서 대국시작 버튼을 누르면 초기화(교점 찾기) 서비스 요청
                 if event.data['init'] == True:
                     self.send_request()
+                    self.start = False
             except:
-                print("error")
-        self.start = 1
+                self.get_logger().error("Error: Failed to Get 'init' data")
+        else:
+            self.get_logger().info(f'Firebase data changed: {event.data}')
+            try:
+                # 앱에서 대국종료 버튼을 누르면 start변수 True로 바꾸기
+                if event.data['init'] == True:
+                    self.start = True
+            except:
+                self.get_logger().error("Error: Failed to Get 'init' data")
 
+
+    # 서비스 서버 노드 (초기화(교점 찾기)하라고 명령)
     def send_request(self):
         self.get_logger().info(f'send Request!!')
         self.req.do_initialize = True
