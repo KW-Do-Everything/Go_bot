@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import torch
 from torchvision import transforms
 from PIL import Image as PILImage
-import baduk_vision.VisionModule.letnetgo as letnetgo
+import baduk_vision.VisionModule.lenetgo as lenetgo
 
 from baduk_vision.VisionModule import *
 
@@ -40,9 +40,17 @@ class BadukVision(Node):
         self.pprev_gray = None
         self.check_color = False
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = letnetgo.LeNetGo3()
-        self.model.load_state_dict(torch.load('./model/lenetgo_model_epoch57.pth'))
+        #self.model = lenetgo.LeNetGo3()
+        #self.model.load_state_dict(torch.load('./model/lenetgo_model_epoch74.pth'))
+        self.model = lenetgo.LeNetGo2()
+        self.model.load_state_dict(torch.load('/home/capstone/Go_bot/model/lenetgo_model_epoch30.pth')) #13 canny, 11 otsu
         self.model.to(self.device)
+        self.transform = transforms.Compose([
+                            transforms.Resize((32,32)),
+                            transforms.Grayscale(num_output_channels=1),
+                            transforms.ToTensor(),
+                            transforms.Normalize(mean=[0.5], std=[0.5,])
+                        ])
 
         # Service for do_initialize client
         self.initializeService = self.create_service(
@@ -70,8 +78,14 @@ class BadukVision(Node):
         self.timer = self.create_timer(0.5, self.state_callback)
         self.game_state = "."*361
 
-        self.cornerPoints = np.float32([[310, 98], [994, 124], [1142, 920], [104, 872]])
+        self.cornerPoints = np.float32([[326, 104], [1020, 112], [1210, 914], [150, 900]])
         self.start_flag = True
+
+    def otsu_binarization(self, img):
+        np_img = np.array(img)
+        #np_img = cv2.Canny(np_img, 25, 100)
+        _, otsu = cv2.threshold(np_img, 0, 1, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        return PILImage.fromarray((otsu * 255).astype(np.uint8))
 
     def image_callback(self, msg):
         try:
@@ -85,7 +99,7 @@ class BadukVision(Node):
             
             flow = cv2.calcOpticalFlowFarneback(self.prev_gray, self.gray, 0.0, 0.5, 3, 15, 3, 5, 1.1, 0)
             
-            if np.max(flow) > 2:
+            if np.max(flow) > 3: #1.5:
                 self.check_color = False
                 self.get_logger().info(f'Motion Detected!')
             else:
@@ -98,53 +112,55 @@ class BadukVision(Node):
                 return
             
             if self.points is None:
-                if not os.path.isfile('./points.json'):
+                if not os.path.isfile('/home/capstone/Go_bot/points.json'):
                     self.get_logger().error(f'Initialize First!')
                 else:
-                    with open('./points.json', 'r') as jsonfile:
+                    with open('/home/capstone/Go_bot/points.json', 'r') as jsonfile:
                         self.points = json.load(jsonfile)
             else:
                 if (self.img.size != 0) and (self.points is not None) and self.check_color:
                     
                     img_transformed = perspective(self.cornerPoints, self.img)
                     
-                    cv2.imwrite("./testImg.jpg", img_transformed)
+                    cv2.imwrite("/home/capstone/Go_bot/testImg.jpg", img_transformed)
                     
-                    transform = transforms.Compose([
-                        transforms.Resize((32,32)),
-                        transforms.Grayscale(num_output_channels=1),
-                        transforms.ToTensor(),
-                        transforms.Normalize((0.5,), (0.5,))
-                    ])
-
                     self.game_state = ""
                     for col in self.points:
                         for (x, y) in col:
 
-                            x1 = max(0, x - 12)
-                            y1 = max(0, y - 12)
-                            x2 = min(self.img.shape[1], x + 13) 
-                            y2 = min(self.img.shape[0], y + 13)
+                            x1 = max(0, x - 15)
+                            y1 = max(0, y - 15)
+                            x2 = min(self.img.shape[1], x + 16) 
+                            y2 = min(self.img.shape[0], y + 16)
 
-                            cropped = cv2.GaussianBlur(self.gray[int(y1):int(y2), int(x1):int(x2)], (0,0), 3)
+                            cropped = self.gray[int(y1):int(y2), int(x1):int(x2)]
                             
                             image = PILImage.fromarray(cropped)
-                            image = transform(image).unsqueeze(0)
+                            image = self.transform(image).unsqueeze(0)
 
                             image = image.to(self.device)
 
                             with torch.no_grad():
                                 outputs = self.model(image)
 
+                            """
                             output = torch.argmax(outputs)
                             if output == 0:
-                                state += 'b'
+                                self.game_state += 'b'
                             elif output == 1:
-                                state += '.'
+                                self.game_state += '.'
                             else:
-                                state += 'w'
-
-                print(self.game_state)
+                                self.game_state += 'w'
+                            """
+                            output = outputs[0][0].item()
+                            if output < 0.5:
+                                if np.mean(cropped) > 150:
+                                    self.game_state += "w"
+                                else:
+                                    self.game_state += "b"
+                            else:
+                                self.game_state += '.'
+                self.get_logger().info("state: "+ self.game_state)
 
             self.pprev_gray = self.prev_gray
             self.prev_gray = self.gray
@@ -155,12 +171,12 @@ class BadukVision(Node):
             
     def initialize_points(self, req, res):
         if req.do_initialize:
-            img = homomorphic_filter(self.img)
-            img = perspective(self.cornerPoints, img)
+            #img = homomorphic_filter(self.img)
+            img = perspective(self.cornerPoints, self.img)
             blur = cv2.GaussianBlur(img, (0, 0), 1)
             gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
-            clahe = CLAHE(gray)
-            canny = cv2.Canny(clahe, 35, 40)
+            #clahe = CLAHE(gray)
+            canny = cv2.Canny(gray, 35, 40)
             
 
             lines = line_detector(canny)
@@ -172,9 +188,9 @@ class BadukVision(Node):
             for col in self.points:
                 for (x, y) in col:
                     cv2.circle(test_img, (int(x), int(y)), 12, (255, 0, 0), -1)
-            cv2.imwrite("./points.png", test_img)
+            cv2.imwrite("/home/capstone/Go_bot/points.png", test_img)
 
-            file = './points.json'
+            file = '/home/capstone/Go_bot/points.json'
             with open(file, 'w') as json_file:
                 json.dump(self.points, json_file)
 

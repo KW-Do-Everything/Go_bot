@@ -14,10 +14,10 @@ class ServerListener(Node):
     def __init__(self):
         super().__init__('server_listener')
 
+        self.start = 0
         self.listenerClient = self.create_client(Initialize, 'do_initialize')
         self.req = Initialize.Request()
         self.init_firebase()
-        self.start = 0
 
     def init_firebase(self):
         cred = credentials.Certificate("/home/capstone/Go_bot/src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json")
