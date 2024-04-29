@@ -1,3 +1,6 @@
+from baduk_vision.baduk_vision.VisionModule.color_clssifier import color_classifier
+from baduk_vision.baduk_vision.VisionModule.initialize import get_points, line_detector
+from baduk_vision.baduk_vision.VisionModule.preprocessing import perspective
 import rclpy as rp
 from rclpy.node import Node
 from baduk_msgs.msg import Vision, State
@@ -109,7 +112,8 @@ class BadukVision(Node):
                         self.points = json.load(jsonfile)
             else:
                 if (self.img.size != 0) and (self.points is not None) and self.check_color:
-                    self.game_state = color_classifier(self.img, self.gray, {device: self.device, transform: self.transform, model: self.model})
+                    img_transformed = perspective(self.cornerPoints, self.img)
+                    self.game_state = color_classifier(img_transformed, self.gray, {'device': self.device, 'transform': self.transform, 'model': self.model})
                             
                 self.get_logger().info("state: "+ self.game_state)
 
