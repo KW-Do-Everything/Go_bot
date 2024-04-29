@@ -3,8 +3,6 @@ import numpy as np
 import torch
 from PIL import Image as PILImage
 
-from baduk_vision.baduk_vision.VisionModule.preprocessing import perspective
-
 
 def color_classifier(img: np.ndarray, gray: np.ndarray, torch_utils, points: list) -> str:
     """
