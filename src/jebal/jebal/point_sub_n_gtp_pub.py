@@ -26,7 +26,7 @@ class GoGameProcessor(Node):
             # self.get_logger().info(msg.data)
             # self.get_logger().info(type(self.point))
             self.kata.place_black(msg.data) # black stone place i want
-            # self.get_logger().info("dddddddd")
+            # self.get_logger().info("dddddddd")    
             white_position = self.kata.play_white() # computer place white stone
             self.history.append(white_position)
 
