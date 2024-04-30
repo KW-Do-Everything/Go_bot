@@ -68,7 +68,7 @@ class BadukVision(Node):
         self.timer = self.create_timer(0.5, self.state_callback)
         self.game_state = "."*361
 
-        self.cornerPoints = np.float32([[326, 104], [1020, 112], [1210, 914], [150, 900]])
+        self.cornerPoints = np.float32([[326, 104], [1015, 112], [1205, 910], [155, 900]])
         self.start_flag = True
 
 
@@ -133,7 +133,8 @@ class BadukVision(Node):
             lines = line_detector(canny)                    # 라인 검출
             self.points = get_points(lines, 30)             # 교점 찾기
            
-            self.get_logger().info("Get Points!\n"+self.points)
+            self.get_logger().info("Get Points!\n")
+            print(self.points)
 
             # 이미지에 교점을 찍어서 저장 (확인용)
             test_img = img.copy()

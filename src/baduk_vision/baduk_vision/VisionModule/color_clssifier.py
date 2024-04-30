@@ -23,10 +23,10 @@ def color_classifier(img: np.ndarray, gray: np.ndarray, torch_utils, points: lis
         for (x, y) in col:
             
             # 교점 주위로 이미지 crop
-            x1 = max(0, x - 15)
-            y1 = max(0, y - 15)
-            x2 = min(img.shape[1], x + 16) 
-            y2 = min(img.shape[0], y + 16)
+            x1 = max(0, x - 20)
+            y1 = max(0, y - 20)
+            x2 = min(img.shape[1], x + 21) 
+            y2 = min(img.shape[0], y + 21)
 
             cropped = gray[int(y1):int(y2), int(x1):int(x2)]
             

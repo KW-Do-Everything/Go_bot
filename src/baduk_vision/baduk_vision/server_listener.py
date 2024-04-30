@@ -25,7 +25,7 @@ class ServerListener(Node):
         firebase_admin.initialize_app(cred, {
             'databaseURL': url4listner
         })
-        ref = db.reference('Robots/'+robot_num)
+        ref = db.reference('Robots/'+robot_num+'/init')
         ref.listen(self.firebase_listener)
     
     # Firebase Listner
@@ -35,19 +35,16 @@ class ServerListener(Node):
             self.get_logger().info(f'Firebase data changed: {event.data}')
             try:
                 # 앱에서 대국시작 버튼을 누르면 초기화(교점 찾기) 서비스 요청
-                if event.data['init'] == True:
+                if event.data == True:
                     self.send_request()
                     self.start = False
             except:
                 self.get_logger().error("Error: Failed to Get 'init' data")
         else:
             self.get_logger().info(f'Firebase data changed: {event.data}')
-            try:
-                # 앱에서 대국종료 버튼을 누르면 start변수 True로 바꾸기
-                if event.data['init'] == True:
-                    self.start = True
-            except:
-                self.get_logger().error("Error: Failed to Get 'init' data")
+            # 앱에서 대국종료 버튼을 누르면 start변수 False로 바꾸기
+            if event.data == False:
+                self.start = True
 
 
     # 서비스 서버 노드 (초기화(교점 찾기)하라고 명령)
