@@ -3,7 +3,7 @@
 
 log/
 build/
-intstall/
+install/
 src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json 
 
 gtp_logs/
@@ -11,3 +11,4 @@ gtp_logs/
 /*.png
 /*.jpg
 /points.json
+rosbag*
