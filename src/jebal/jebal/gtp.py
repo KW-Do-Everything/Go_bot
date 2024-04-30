@@ -24,9 +24,9 @@ import select
 
 
 # 실행할 외부 프로그램의 경로
-exe_path = '/home/capstone/katago/katago'
+exe_path = '/home/capstone1/kata/katago'
 # 외부 프로그램에 전달할 인자, 예를 들어 'gtp' 명령어 
-args = ['gtp', '-model', '/home/capstone/katago/KataGo6b.gz']
+args = ['gtp', '-model', '/home/capstone1/kata/kata.gz']
 
 #### 뒤에 cfg 옵션 나중에 설정해야함####
 
@@ -444,6 +444,8 @@ class gtp():
         lead = np.mean(white_lead_numeric)
         return lead
     
+
+    ################################
     def testdragon(self, num):
         if self.boardsize(19):
             print("Board size set to 19x19")
@@ -460,8 +462,45 @@ class gtp():
         self.close()
         return data
 
-            
 
+
+
+    def place_solo(self, point):
+        if len(self.history) % 2  == 0: # black stone
+            self.write("play black "+point)
+            answer=self.readline()
+            if answer[0]=="=":
+                self.history.append(["b",point])
+                return True
+            else:return False
+        else: # white stone
+            self.write("play write "+point)
+            answer=self.readline()
+            if answer[0]=="=":
+                self.history.append(["w",point])
+                return True
+            else:return False
+
+
+
+
+
+'''
+    def place_white(self,move): # 좌표에 흰돌 두기
+        if move == "RESIGN":
+            print("WARNING: trying to play RESIGN as GTP move")
+            self.history.append(["w",move])
+            return True
+        self.write("play white "+move)
+        answer=self.readline()
+        if answer[0]=="=":
+            self.history.append(["w",move])
+            return True
+        else:return False
+
+
+
+'''
 
 
 

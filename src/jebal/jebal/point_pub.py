@@ -38,7 +38,7 @@ class BlackStonePublisher(Node):
         for i in range(19):
             for j in range(19):
                 index = i * 19 + j
-                if str1[index] != str2[index]:
+                if str1[index] != str2[index] and str1[index] == '.':
                     # 바둑판 좌표는 보통 A1부터 T19까지 (I 제외) 사용합니다.
                     column = chr(j + ord('A') if j < 8 else j + ord('A') + 1)
                     row = str(19 - i)

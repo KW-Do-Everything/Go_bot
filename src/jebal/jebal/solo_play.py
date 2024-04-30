@@ -7,31 +7,32 @@ from datetime import datetime
 
 class GoGameProcessor(Node):
     def __init__(self):
-        super().__init__('go_game_processor')
+        super().__init__('solo_play')
         self.kata = gtp()
+        self.kata.komi(6.5)
 
         self.subscription = self.create_subscription(
             String, 'black_stone_topic', self.listener_callback, 10)
         self.publisher_ = self.create_publisher(Go, 'game_state_topic', 10)
 
         self.point = ''
-        self.history = [" "] # 착점 모음
+        self.history1 = [" "] # 착점 모음1 - all points
+        # self.history2 = [" "] # 착점 모음2 - select points
+
+        self.flag = True
 
 
 
     def listener_callback(self, msg):
-        if (msg.data != self.history[-1]):
-            self.history.append(msg.data)
-            # self.get_logger().info("fffffff")
-            # self.get_logger().info(msg.data)
-            # self.get_logger().info(type(self.point))
-            self.kata.place_black(msg.data) # black stone place i want
-            # self.get_logger().info("dddddddd")
-            white_position = self.kata.play_white() # computer place white stone
-            self.history.append(white_position)
+        if (msg.data != self.history1[-1]):
+            self.history1.append(msg.data)
+            # if(msg.data not in self.history2):
+            #     self.history2.append(msg.data)
+            
+            
+            self.kata.place_solo(msg.data) # black stone place i want            
+            self.get_logger().info('place : %s' %msg.data)
 
-
-            self.get_logger().info('gen_White : %s' % white_position)
             game_state = Go()
 
             game_state.territory = self.kata.final_score()

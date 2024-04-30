@@ -24,7 +24,8 @@ setup(
             'test = jebal.test:main',
             'game_state_subscriber = jebal.gtp_sub:main',
             'black_stone_publisher = jebal.point_pub:main',
-            'go_game_processor = jebal.point_sub_n_gtp_pub:main'
+            'go_game_processor = jebal.point_sub_n_gtp_pub:main',
+            'solo_play = jebal.solo_play:main'
         ],
     },
 )
