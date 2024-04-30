@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import cupy as cp
+#import cupy as cp
 
 
 # Contrast Limited Adaptive Histogram Equalization
@@ -77,6 +77,7 @@ def perspective(cornerPoints: np.ndarray, img: np.ndarray) -> np.ndarray:
 
 
 # 조명 제거를 위한 호모모픽 필터 (사용안할 듯)
+"""
 def homomorphic_filter(img: np.ndarray) -> np.ndarray:
     img_YUV = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
     y = img_YUV[:, :, 0]
@@ -123,3 +124,5 @@ def homomorphic_filter(img: np.ndarray) -> np.ndarray:
     img_YUV[:, :, 0] = img_out.get()
 
     return cv2.cvtColor(img_YUV, cv2.COLOR_YUV2BGR)
+    """
+    

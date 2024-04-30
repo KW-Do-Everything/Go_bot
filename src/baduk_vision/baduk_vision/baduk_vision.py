@@ -42,7 +42,7 @@ class BadukVision(Node):
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = lenetgo.LeNetGo2()
-        self.model.load_state_dict(torch.load('/home/capstone/Go_bot/model/lenetgo_model_epoch30.pth'))
+        self.model.load_state_dict(torch.load('/home/capstone2/Go_bot/model/lenetgo_model_epoch30.pth'))
         self.model.to(self.device)
         self.transform = transforms.Compose([
                             transforms.Resize((32,32)),                     # 32x32로 resize
@@ -68,7 +68,7 @@ class BadukVision(Node):
         self.timer = self.create_timer(0.5, self.state_callback)
         self.game_state = "."*361
 
-        self.cornerPoints = np.float32([[326, 104], [1015, 112], [1205, 910], [155, 900]])
+        self.cornerPoints = np.float32([[326, 104], [1015, 112], [1205, 905], [155, 900]])
         self.start_flag = True
 
 
@@ -103,11 +103,11 @@ class BadukVision(Node):
             
             if self.points is None: # 교점 정보가 없으면
                 # json 파일이 없으면 
-                if not os.path.isfile('/home/capstone/Go_bot/points.json'):
+                if not os.path.isfile('/home/capstone2/Go_bot/points.json'):
                     self.get_logger().error(f'Initialize First!')   # 초기화를 하라고 출력
                 else:   # json 파일이 있으면
                     # 파일 열어서 self.points에 저장
-                    with open('/home/capstone/Go_bot/points.json', 'r') as jsonfile:
+                    with open('/home/capstone2/Go_bot/points.json', 'r') as jsonfile:
                         self.points = json.load(jsonfile)
             else:   # 교점 정보가 있으면
                 if (self.img.size != 0) and self.check_color: # 이미지가 온전하고, 바둑판 위의 움직임이 없으면
@@ -141,10 +141,10 @@ class BadukVision(Node):
             for col in self.points:
                 for (x, y) in col:
                     cv2.circle(test_img, (int(x), int(y)), 12, (255, 0, 0), -1)
-            cv2.imwrite("/home/capstone/Go_bot/points.png", test_img)
+            cv2.imwrite("/home/capstone2/Go_bot/points.png", test_img)
 
             # 구한 교점을 json 파일로 저장
-            file = '/home/capstone/Go_bot/points.json'
+            file = '/home/capstone2/Go_bot/points.json'
             with open(file, 'w') as json_file:
                 json.dump(self.points, json_file)
 

@@ -16,7 +16,7 @@ def color_classifier(img: np.ndarray, gray: np.ndarray, torch_utils, points: lis
     """
 
     # 확인용 이미지 저장
-    cv2.imwrite("/home/capstone/Go_bot/testImg.jpg", img)
+    cv2.imwrite("/home/capstone2/Go_bot/testImg.jpg", img)
     
     game_state = ""
     for col in points:

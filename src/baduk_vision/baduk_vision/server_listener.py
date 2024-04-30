@@ -21,7 +21,7 @@ class ServerListener(Node):
 
     # Firebase 초기화
     def init_firebase(self):
-        cred = credentials.Certificate("/home/capstone/Go_bot/src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json")
+        cred = credentials.Certificate("/home/capstone2/Go_bot/src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json")
         firebase_admin.initialize_app(cred, {
             'databaseURL': url4listner
         })
