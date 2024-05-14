@@ -11,4 +11,6 @@ gtp_logs/
 /*.png
 /*.jpg
 /points.json
+datasets/
 rosbag*
+
