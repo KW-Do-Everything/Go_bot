@@ -15,7 +15,7 @@ def line_detector(canny: np.ndarray) -> np.ndarray:
     """
 
     # 허프 변환
-    lines = cv2.HoughLines(canny, 0.5, np.pi/180, 200)
+    lines = cv2.HoughLines(canny, 0.5, np.pi/180, 100)
 
     # 수직/수평선 구분
     # MinMaxScaler로 정규화 후 DBSCAN으로 군집화해서 직선을 각도를 기준으로 두 그룹으로 나눔

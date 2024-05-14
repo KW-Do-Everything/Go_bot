@@ -12,7 +12,9 @@ import os
 import matplotlib.pyplot as plt
 
 import torch
-from torchvision import transforms
+from torchvision import transforms, models
+
+from ultralytics import YOLO
 
 from baduk_vision.VisionModule import *
 
@@ -41,15 +43,7 @@ class BadukVision(Node):
         self.check_color = False
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = lenetgo.LeNetGo2()
-        self.model.load_state_dict(torch.load('/home/capstone2/Go_bot/model/lenetgo_model_epoch30.pth'))
-        self.model.to(self.device)
-        self.transform = transforms.Compose([
-                            transforms.Resize((32,32)),                     # 32x32로 resize
-                            transforms.Grayscale(num_output_channels=1),    # grayscale 변환
-                            transforms.ToTensor(),                          # 텐서로 변환
-                            transforms.Normalize(mean=[0.5], std=[0.5,])    # 평균 0.5, 표준편차 0.5로 정규화
-                        ])
+        self.model = YOLO('./model/best.pt', task='classify').cuda()
 
         # Service for do_initialize client
         self.initializeService = self.create_service(
@@ -68,7 +62,7 @@ class BadukVision(Node):
         self.timer = self.create_timer(0.5, self.state_callback)
         self.game_state = "."*361
 
-        self.cornerPoints = np.float32([[326, 104], [1015, 112], [1205, 905], [155, 900]])
+        self.cornerPoints = np.float32([[335, 171], [985, 194], [1113, 869], [189, 839]])
         self.start_flag = True
 
 
@@ -89,7 +83,7 @@ class BadukVision(Node):
             
             # 군나르 파너벡 알고리즘은 모든 픽셀에 대해 x,y축의 움직임을 감지
             # 계산된 flow에서 최대값이 3 이상이면 움직임이 있다고 판단, check_vision을 False로 변경해 색 탐지를 안하도록 
-            if np.max(flow) > 3: #1.5:
+            if np.max(flow) > 5: #1.5:
                 self.check_color = False
                 self.get_logger().info(f'Motion Detected!')
             else:
@@ -112,8 +106,7 @@ class BadukVision(Node):
             else:   # 교점 정보가 있으면
                 if (self.img.size != 0) and self.check_color: # 이미지가 온전하고, 바둑판 위의 움직임이 없으면
                     img_transformed = perspective(self.cornerPoints, self.img)  # 시점변환
-                    self.game_state = color_classifier(img_transformed, self.gray, {'device': self.device, 'transform': self.transform, 'model': self.model}, self.points)  # 색 검출
-                            
+                    self.game_state = color_classifier(img_transformed, self.gray, self.model, self.points)  # 색 검출 
                 # self.get_logger().info("state: "+ self.game_state)
 
             self.prev_gray = self.gray
