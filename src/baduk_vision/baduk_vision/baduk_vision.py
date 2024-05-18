@@ -12,8 +12,6 @@ import os
 import matplotlib.pyplot as plt
 
 import torch
-from torchvision import transforms, models
-
 from ultralytics import YOLO
 
 from baduk_vision.VisionModule import *
@@ -82,7 +80,7 @@ class BadukVision(Node):
             flow = cv2.calcOpticalFlowFarneback(self.prev_gray, self.gray, 0.0, 0.5, 3, 15, 3, 5, 1.1, 0)
             
             # 군나르 파너벡 알고리즘은 모든 픽셀에 대해 x,y축의 움직임을 감지
-            # 계산된 flow에서 최대값이 3 이상이면 움직임이 있다고 판단, check_vision을 False로 변경해 색 탐지를 안하도록 
+            # 계산된 flow에서 최대값이 threshold 이상이면 움직임이 있다고 판단, check_vision을 False로 변경해 색 탐지를 안하도록 
             if np.max(flow) > 5: #1.5:
                 self.check_color = False
                 self.get_logger().info(f'Motion Detected!')
@@ -130,11 +128,11 @@ class BadukVision(Node):
             print(self.points)
 
             # 이미지에 교점을 찍어서 저장 (확인용)
-            test_img = img.copy()
-            for col in self.points:
-                for (x, y) in col:
-                    cv2.circle(test_img, (int(x), int(y)), 12, (255, 0, 0), -1)
-            cv2.imwrite("/home/capstone2/Go_bot/points.png", test_img)
+            # test_img = img.copy()
+            # for col in self.points:
+            #     for (x, y) in col:
+            #         cv2.circle(test_img, (int(x), int(y)), 12, (255, 0, 0), -1)
+            # cv2.imwrite("/home/capstone2/Go_bot/points.png", test_img)
 
             # 구한 교점을 json 파일로 저장
             file = '/home/capstone2/Go_bot/points.json'

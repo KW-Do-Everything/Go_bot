@@ -17,7 +17,7 @@ def color_classifier(img: np.ndarray, gray: np.ndarray, model, points: list) -> 
     """
 
     # 확인용 이미지 저장
-    # cv2.im write("/home/capstone2/Go_bot/testImg.jpg", img)
+    cv2.imwrite("/home/capstone2/Go_bot/testImg.jpg", img)
 
     # fig = plt.figure(figsize=(30, 50))
     # idx = 361
