@@ -41,7 +41,7 @@ class BadukVision(Node):
         self.check_color = False
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = YOLO('./model/best.pt', task='classify').cuda()
+        self.model = YOLO('/home/capstone2/Go_bot/model/best.pt', task='classify').cuda()
 
         # Service for do_initialize client
         self.initializeService = self.create_service(
@@ -60,7 +60,7 @@ class BadukVision(Node):
         self.timer = self.create_timer(0.5, self.state_callback)
         self.game_state = "."*361
 
-        self.cornerPoints = np.float32([[335, 171], [985, 194], [1113, 869], [189, 839]])
+        self.cornerPoints = np.float32([[335, 171], [980, 194], [1110, 869], [189, 839]])
         self.start_flag = True
 
 
@@ -81,7 +81,17 @@ class BadukVision(Node):
             
             # 군나르 파너벡 알고리즘은 모든 픽셀에 대해 x,y축의 움직임을 감지
             # 계산된 flow에서 최대값이 threshold 이상이면 움직임이 있다고 판단, check_vision을 False로 변경해 색 탐지를 안하도록 
-            if np.max(flow) > 10: #1.5:
+            # dx = flow[:][0]
+            # dy = flow[:][1]
+            # flow_mag = np.sqrt(dx**2 + dy**2)
+
+            # if np.max(flow_mag) > 10:
+            #     self.check_color = False
+            #     self.get_logger().info(f'Motion Detected!')
+            # else:
+            #     self.check_color = True
+            
+            if np.max(flow) > 5: #1.5:
                 self.check_color = False
                 self.get_logger().info(f'Motion Detected!')
             else:
