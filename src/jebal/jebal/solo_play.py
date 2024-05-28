@@ -50,7 +50,7 @@ class GoGameProcessor(Node):
                 game_state.re_rate
                 )
             )
-            self.kata.showboard()
+            # self.kata.showboard()
             self.publisher_.publish(game_state)
 
 

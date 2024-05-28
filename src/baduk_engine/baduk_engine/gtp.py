@@ -475,7 +475,7 @@ class gtp():
                 return True
             else:return False
         else: # white stone
-            self.write("play write "+point)
+            self.write("play white "+point)
             answer=self.readline()
             if answer[0]=="=":
                 self.history.append(["w",point])
@@ -486,22 +486,21 @@ class gtp():
 
 
     ## 바둑판 현황 체크
-    def format_board(self):
+    def check_board(self):
         board_lines = self.showboard()[1:21]
+
         board_size = len(board_lines) - 1  # 제목 행을 제외한 실제 바둑판 크기
         board_string = ""
 
         # 바둑판의 각 행을 순회
         for line in board_lines[1:]:  # 첫 번째 행(열 제목)을 제외
-            for char in line.split()[1:]:  # 첫 번째 열(행 제목)을 제외
+            for char in line:  # 첫 번째 열(행 제목)을 제외
                 if char == '.':
                     board_string += '.'  # 빈 칸
-                elif 'X' in char:
+                elif char == 'X':
                     board_string += 'b'  # 검은 돌
-                elif 'O' in char:
+                elif char == 'O':
                     board_string += 'w'  # 흰 돌
-                else:
-                    board_string += '?'  # 알 수 없는 문자에 대한 처리
 
         return board_string
 
@@ -629,13 +628,19 @@ def main():
     # print(kata.showboard()[1:21])
     # kata.play_black()
     i = 0
-    while i < 10:
+    while i < 5:
         kata.play_black()
-        print(kata.format_board())
+        print(kata.showboard()[1:21])
         kata.play_white()
-        print(kata.format_board())
+        print(kata.showboard()[1:21])
         i +=1
-
+    i = 0
+    while i < 5:
+        kata.play_black()
+        print(kata.check_board())
+        kata.play_white()
+        print(kata.check_board())
+        i +=1
 
 
     # 사용 후 자원 정리

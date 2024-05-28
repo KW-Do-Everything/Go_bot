@@ -7,6 +7,7 @@ class BlackStonePublisher(Node):
     def __init__(self):
         super().__init__('black_stone_publisher')
         self.publisher_ = self.create_publisher(String, 'black_stone_topic', 10)
+        
         self.last_state_msg = "." * 361
         self.subscriber = self.create_subscription(
             State,
@@ -16,6 +17,8 @@ class BlackStonePublisher(Node):
         )
         self.timer = self.create_timer(0.5, self.timer_callback)
         self.position = None
+
+
 
     def timer_callback(self):
         msg = String()
@@ -30,10 +33,11 @@ class BlackStonePublisher(Node):
             self.position = self.diff_to_coordinates(self.last_state_msg, msg.state)
             self.last_state_msg = msg.state
 
+
+
     def diff_to_coordinates(self, str1, str2):
         if len(str1) != len(str2) or len(str1) != 361:
             raise ValueError("Strings must be 361 characters long")
-
         coordinates_str = ''  # 변경된 위치의 바둑판 좌표를 저장할 문자열
         for i in range(19):
             for j in range(19):
@@ -44,6 +48,9 @@ class BlackStonePublisher(Node):
                     row = str(19 - i)
                     coordinates_str += column + row + " "  # 좌표를 문자열에 추가하고 공백으로 구분
         return coordinates_str.strip()  # 문자열의 끝에 있는 공백을 제거
+
+
+
 
 
 def main(args=None):

@@ -1,1 +1,2 @@
 string state
+bool flag
