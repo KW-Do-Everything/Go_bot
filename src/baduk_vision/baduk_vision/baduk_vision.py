@@ -46,7 +46,6 @@ class BadukVision(Node):
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = YOLO('/home/capstone2/Go_bot/model/best.pt', task='classify') # YOLOv8-cls
-        # self.model = torch.hub.load("yolov5", "custom", "./model/bestv5.pt", source='local').to(self.device)   # YOLOv5-cls
         self.model = self.model.to(self.device)
 
         # Service for do_initialize client
