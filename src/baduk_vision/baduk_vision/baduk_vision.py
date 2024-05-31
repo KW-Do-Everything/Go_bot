@@ -9,6 +9,7 @@ import numpy as np
 import json
 import os.path
 import os
+import sys
 import matplotlib.pyplot as plt
 
 import torch
@@ -17,6 +18,9 @@ from ultralytics import YOLO
 from baduk_vision.VisionModule import *
 
 import threading
+import pathlib
+temp = pathlib.PosixPath
+pathlib.WindowsPath = pathlib.PosixPath
 
 class BadukVision(Node):
 
@@ -41,7 +45,9 @@ class BadukVision(Node):
         self.check_color = False
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = YOLO('/home/capstone2/Go_bot/model/best.pt', task='classify').cuda()
+        self.model = YOLO('/home/capstone2/Go_bot/model/best.pt', task='classify') # YOLOv8-cls
+        # self.model = torch.hub.load("yolov5", "custom", "./model/bestv5.pt", source='local').to(self.device)   # YOLOv5-cls
+        self.model = self.model.to(self.device)
 
         # Service for do_initialize client
         self.initializeService = self.create_service(
@@ -60,7 +66,7 @@ class BadukVision(Node):
         self.timer = self.create_timer(0.5, self.state_callback)
         self.game_state = "."*361
 
-        self.cornerPoints = np.float32([[335, 171], [980, 194], [1110, 869], [189, 839]])
+        self.cornerPoints = np.float32([[335, 171], [980, 194], [1110, 860], [189, 839]])
         self.start_flag = True
 
 
@@ -114,7 +120,7 @@ class BadukVision(Node):
             else:   # 교점 정보가 있으면
                 if (self.img.size != 0) and self.check_color: # 이미지가 온전하고, 바둑판 위의 움직임이 없으면
                     img_transformed = perspective(self.cornerPoints, self.img)  # 시점변환
-                    self.game_state = color_classifier(img_transformed, self.gray, self.model, self.points)  # 색 검출 
+                    self.game_state = color_classifier(img_transformed, self.model, self.points)  # 색 검출 
                 # self.get_logger().info("state: "+ self.game_state)
 
             self.prev_gray = self.gray
