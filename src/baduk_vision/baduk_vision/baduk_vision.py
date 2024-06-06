@@ -103,10 +103,10 @@ class BadukVision(Node):
                 self.check_color = True
             
             # 이미지 변환 확인용
-            if self.img is not None:
-                self.get_logger().info("Image successfully converted to OpenCV format")
-            else:
-                self.get_logger().error("Failed to convert image")
+            # if self.img is not None:
+            #     self.get_logger().info("Image successfully converted to OpenCV format")
+            # else:
+            #     self.get_logger().error("Failed to convert image")
             
             if self.points is None: # 교점 정보가 없으면
                 # json 파일이 없으면 

@@ -12,31 +12,24 @@ def preprocess_image(img, x, y, index):
 
     cropped = img[int(y1):int(y2), int(x1):int(x2)]
     cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
+    cropped = cv2.resize(cropped, (224, 224))  # 이미지를 고정된 크기로 리사이즈
+    cropped = cropped / 255.0
 
     return index, cropped
 
+from torch.cuda.amp import autocast
+
 def color_classifier(img: np.ndarray, model, points: list) -> str:
-    """
-    입력
-        img: perspective transform된 입력 영상
-        points: 바둑판 교점 좌표
-    출력
-        game_state: str 361자리 문자열
-    """
-
-    # 확인용 이미지 저장
-    cv2.imwrite("/home/capstone2/Go_bot/testImg.jpg", img)
-
     img_list = []
     game_state = ""
-    tasks = []
 
+    cv2.imwrite("/home/capstone2/Go_bot/testImg.jpg", img)
+
+    # 전처리 병렬화
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = []
-        for i, col in enumerate(points):
-            for j, (x, y) in enumerate(col):
-                index = i * len(col) + j
-                futures.append(executor.submit(preprocess_image, img, x, y, index))
+        futures = [executor.submit(preprocess_image, img, x, y, i * len(col) + j)
+                   for i, col in enumerate(points)
+                   for j, (x, y) in enumerate(col)]
 
         for future in concurrent.futures.as_completed(futures):
             index, cropped = future.result()
@@ -44,16 +37,17 @@ def color_classifier(img: np.ndarray, model, points: list) -> str:
 
     # 인덱스를 기준으로 정렬
     img_list.sort(key=lambda x: x[0])
-    img_batch = [img for _, img in img_list]
-    
-    #v8
+    img_batch = np.array([img for _, img in img_list], dtype=np.float32)
+
     # 모델 예측
     with torch.no_grad():
-        predictions = model.predict(img_batch)
+        img_batch_tensor = torch.tensor(img_batch).permute(0, 3, 1, 2).float().to("cuda")  # Change to tensor and permute to match model input
+        with autocast():
+            predictions = model(img_batch_tensor)
 
     # 예측 결과 처리
-    for prediction in  predictions:
-        cls = prediction.probs.data.argmax()
+    for prediction in predictions:
+        cls = prediction.probs.top1
         if cls == 0:
             game_state += 'b'
         elif cls == 1:
@@ -63,7 +57,5 @@ def color_classifier(img: np.ndarray, model, points: list) -> str:
 
     if len(game_state) != 361:
         raise ValueError("Game state length is not 361")
-    
-    print(game_state)
 
     return game_state
