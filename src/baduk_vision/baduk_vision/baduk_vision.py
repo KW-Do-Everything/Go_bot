@@ -63,9 +63,10 @@ class BadukVision(Node):
             10
         )
         self.timer = self.create_timer(0.5, self.state_callback)
-        self.game_state = "."*361
+        self.game_state = "."*81
 
-        self.cornerPoints = np.float32([[335, 171], [980, 194], [1110, 860], [189, 839]])
+        # self.cornerPoints = np.float32([[335, 171], [980, 194], [1110, 860], [189, 839]])
+        self.cornerPoints = np.float32([[424, 347], [797, 366], [820, 708], [371, 693]])
         self.start_flag = True
 
 
@@ -132,6 +133,8 @@ class BadukVision(Node):
     def initialize_points(self, req, res):
         if req.do_initialize:   # 클라이언트에서 요청이 왔을 때
             img = perspective(self.cornerPoints, self.img)  # 시점 변환
+            cv2.imwrite("/home/capstone2/Go_bot/points.png", img)
+
             blur = cv2.GaussianBlur(img, (0, 0), 1)         # 가우시안 블러
             gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)   # grayscale 변환
             canny = cv2.Canny(gray, 35, 40)                 # 캐니 엣지

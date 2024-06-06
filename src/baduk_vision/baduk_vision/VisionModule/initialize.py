@@ -21,7 +21,7 @@ def line_detector(canny: np.ndarray) -> np.ndarray:
     # MinMaxScaler로 정규화 후 DBSCAN으로 군집화해서 직선을 각도를 기준으로 두 그룹으로 나눔
     #cluster_vh = KMeans(n_clusters=2).fit(lines.squeeze()[:, 1].reshape(len(lines), 1))
     mmss = MinMaxScaler().fit_transform(lines.squeeze()[:,1].reshape(len(lines), 1))
-    cluster_vh = DBSCAN(eps=0.1, min_samples=8).fit(mmss)
+    cluster_vh = DBSCAN(eps=0.1, min_samples=2).fit(mmss)
     
     lines0 = np.empty((0, 2))
     lines1 = np.empty((0, 2))
