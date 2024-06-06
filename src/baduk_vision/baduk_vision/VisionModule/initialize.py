@@ -11,7 +11,7 @@ def line_detector(canny: np.ndarray) -> np.ndarray:
     입력
         canny: 캐니 엣지 영상
     출력
-        np.ndarray: 수직 수평선 각 19개씩
+        np.ndarray: 수직 수평선 각 9개씩
     """
 
     # 허프 변환
@@ -32,8 +32,8 @@ def line_detector(canny: np.ndarray) -> np.ndarray:
             lines1 = np.append(lines1, line, axis=0)
 
     # 각도를 기준으로 나눈 선들 사이에서 19개씩 그룹을 만듦.
-    cluster0 = AgglomerativeClustering(n_clusters=19).fit_predict(lines0)
-    cluster1 = AgglomerativeClustering(n_clusters=19).fit_predict(lines1)
+    cluster0 = AgglomerativeClustering(n_clusters=9).fit_predict(lines0)
+    cluster1 = AgglomerativeClustering(n_clusters=9).fit_predict(lines1)
 
     lines0 = NearestCentroid().fit(lines0, cluster0).centroids_
     lines1 = NearestCentroid().fit(lines1, cluster1).centroids_
@@ -46,7 +46,7 @@ def get_points(lines: np.ndarray, threshold: float) -> list:
         lines: line_detector 결과
         threshold: 직선과 점사이의 거리 threshold
     출력
-        points: list, 교점 361개, 우상단->우하단까지 정렬한 결과
+        points: list, 교점 81개, 우상단->우하단까지 정렬한 결과
     """
 
     # 수직/수평선 DBSCAN의 결과가 계속 바뀌므로 어떤게 수직인지 수평인지 모름

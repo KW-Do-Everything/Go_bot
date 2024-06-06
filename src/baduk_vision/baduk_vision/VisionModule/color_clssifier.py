@@ -21,7 +21,7 @@ def color_classifier(img: np.ndarray, model, points: list) -> str:
         img: perspective transform된 입력 영상
         points: 바둑판 교점 좌표
     출력
-        game_state: str 361자리 문자열
+        game_state: str 81자리 문자열
     """
 
     # 확인용 이미지 저장
@@ -61,8 +61,8 @@ def color_classifier(img: np.ndarray, model, points: list) -> str:
         else:
             game_state += '.'
 
-    if len(game_state) != 361:
-        raise ValueError("Game state length is not 361")
+    if len(game_state) != 81:
+        raise ValueError("Game state length is not 81")
     
     print(game_state)
 
