@@ -45,7 +45,7 @@ class BadukVision(Node):
         self.check_color = False
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = YOLO('/home/capstone2/Go_bot/model/best.pt', task='classify') # YOLOv8-cls
+        self.model = YOLO('/home/capstone1/Go_bot/model/best.pt', task='classify') # YOLOv8-cls
         self.model = self.model.to(self.device)
 
         # Service for do_initialize client
@@ -64,9 +64,10 @@ class BadukVision(Node):
         )
         self.timer = self.create_timer(0.5, self.state_callback)
         self.game_state = "."*81
+        self.game_state_prev = "."*81
 
         # self.cornerPoints = np.float32([[335, 171], [980, 194], [1110, 860], [189, 839]])
-        self.cornerPoints = np.float32([[424, 347], [797, 366], [820, 708], [371, 693]])
+        self.cornerPoints = np.float32([[435, 342], [797, 370], [806, 702], [371, 673]])
         self.start_flag = True
 
 
@@ -111,11 +112,11 @@ class BadukVision(Node):
             
             if self.points is None: # 교점 정보가 없으면
                 # json 파일이 없으면 
-                if not os.path.isfile('/home/capstone2/Go_bot/points.json'):
+                if not os.path.isfile('/home/capstone1/Go_bot/points.json'):
                     self.get_logger().error(f'Initialize First!')   # 초기화를 하라고 출력
                 else:   # json 파일이 있으면
                     # 파일 열어서 self.points에 저장
-                    with open('/home/capstone2/Go_bot/points.json', 'r') as jsonfile:
+                    with open('/home/capstone1/Go_bot/points.json', 'r') as jsonfile:
                         self.points = json.load(jsonfile)
             else:   # 교점 정보가 있으면
                 if (self.img.size != 0) and self.check_color: # 이미지가 온전하고, 바둑판 위의 움직임이 없으면
@@ -133,7 +134,7 @@ class BadukVision(Node):
     def initialize_points(self, req, res):
         if req.do_initialize:   # 클라이언트에서 요청이 왔을 때
             img = perspective(self.cornerPoints, self.img)  # 시점 변환
-            cv2.imwrite("/home/capstone2/Go_bot/points.png", img)
+            cv2.imwrite("/home/capstone1/Go_bot/points.png", img)
 
             blur = cv2.GaussianBlur(img, (0, 0), 1)         # 가우시안 블러
             gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)   # grayscale 변환
@@ -150,10 +151,10 @@ class BadukVision(Node):
             for col in self.points:
                 for (x, y) in col:
                     cv2.circle(test_img, (int(x), int(y)), 12, (255, 0, 0), -1)
-            cv2.imwrite("/home/capstone2/Go_bot/points.png", test_img)
+            cv2.imwrite("/home/capstone1/Go_bot/points.png", test_img)
 
             # 구한 교점을 json 파일로 저장
-            file = '/home/capstone2/Go_bot/points.json'
+            file = '/home/capstone1/Go_bot/points.json'
             with open(file, 'w') as json_file:
                 json.dump(self.points, json_file)
 
@@ -171,9 +172,12 @@ class BadukVision(Node):
 
         # self.game_state는 카메라 입장에서본 상황.
         # 퍼블리시 할때는 사용자 입장에서본 상황을 주고 싶음. -> 문자열을 통째로 뒤집기
-        msg.state = self.game_state[:: -1]
+        if self.game_state != self.game_state_prev:
+            self.game_state_prev = self.game_state
+            
+            msg.state = self.game_state[:: -1]
 
-        self.statePublisher.publish(msg)
+            self.statePublisher.publish(msg)
         #self.get_logger().info(f'{msg.state}')
 
 

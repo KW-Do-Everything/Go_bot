@@ -26,7 +26,7 @@ import select
 # 실행할 외부 프로그램의 경로
 exe_path = '/home/capstone1/kata/katago'
 # 외부 프로그램에 전달할 인자, 예를 들어 'gtp' 명령어 
-args = ['gtp', '-model', '/home/capstone1/kata/kata.gz']
+args = ['gtp', '-model', '/home/capstone1/kata/kata99.gz']
 
 #### 뒤에 cfg 옵션 나중에 설정해야함####
 
@@ -487,7 +487,7 @@ class gtp():
 
     ## 바둑판 현황 체크
     def check_board(self):
-        board_lines = self.showboard()[1:21]
+        board_lines = self.showboard()[1:11]
 
         board_size = len(board_lines) - 1  # 제목 행을 제외한 실제 바둑판 크기
         board_string = ""
@@ -539,12 +539,12 @@ def main():
     kata = gtp()
     print("setting on")
     # 19x19 바둑판 설정
-    if kata.boardsize(19):
-        print("Board size set to 19x19")
+    # if kata.boardsize(19):
+    #     print("Board size set to 19x19")
     
     # 덤 설정
-    if kata.komi(6.5):
-        print("Komi set to 6.5")
+    # if kata.komi(6.5):
+    #     print("Komi set to 6.5")
 
     # 이름 확인
 
@@ -591,7 +591,15 @@ def main():
     # kata.place_black(('D4'))
 
 
-    # print(kata.showboard()[1:21])
+    # print(kata.showboard()[1:11])
+    # kata.play_white()
+    # print(kata.showboard()[1:11])
+    # kata.play_black()
+    # print(kata.showboard()[1:11])
+    # kata.play_white()
+    # print(kata.showboard()[1:11])
+    # kata.play_black()
+    # print(kata.showboard()[1:11])
     # kata.play_white()
     # print(kata.showboard()[1:21])
     # kata.play_black()
@@ -619,28 +627,22 @@ def main():
     # kata.play_white()
     # print(kata.showboard()[1:21])
     # kata.play_black()
-    # print(kata.showboard()[1:21])
-    # kata.play_white()
-    # print(kata.showboard()[1:21])
-    # kata.play_black()
-    # print(kata.showboard()[1:21])
-    # kata.play_white()
-    # print(kata.showboard()[1:21])
-    # kata.play_black()
+
+
     i = 0
     while i < 5:
         kata.play_black()
-        print(kata.showboard()[1:21])
+        print(kata.showboard()[1:11])
         kata.play_white()
-        print(kata.showboard()[1:21])
+        print(kata.showboard()[1:11])
         i +=1
-    i = 0
-    while i < 5:
-        kata.play_black()
-        print(kata.check_board())
-        kata.play_white()
-        print(kata.check_board())
-        i +=1
+    # i = 0
+    # while i < 5:
+    #     kata.play_black()
+    #     print(kata.check_board())
+    #     kata.play_white()
+    #     print(kata.check_board())
+    #     i +=1
 
 
     # 사용 후 자원 정리
