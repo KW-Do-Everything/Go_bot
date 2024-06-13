@@ -67,8 +67,17 @@ class BadukVision(Node):
         self.game_state_prev = "."*81
 
         # self.cornerPoints = np.float32([[335, 171], [980, 194], [1110, 860], [189, 839]])
-        self.cornerPoints = np.float32([[435, 342], [797, 370], [806, 702], [371, 673]])
+        self.cornerPoints = np.float32([[430, 345], [792, 372], [800, 706], [366, 673]])
         self.start_flag = True
+
+        # check_vision topic subscriber
+        self.cv_subscriber = self.create_subscription(
+            Vision,
+            'check_vision',
+            self.check_vision_callback,
+            10
+        )
+        self.check_vision = True
 
 
     # 이미지가 들어오는 이미지 구독 노드
@@ -119,7 +128,7 @@ class BadukVision(Node):
                     with open('/home/capstone1/Go_bot/points.json', 'r') as jsonfile:
                         self.points = json.load(jsonfile)
             else:   # 교점 정보가 있으면
-                if (self.img.size != 0) and self.check_color: # 이미지가 온전하고, 바둑판 위의 움직임이 없으면
+                if (self.img.size != 0) and self.check_color and self.check_vision: # 이미지가 온전하고, 바둑판 위의 움직임이 없으면
                     img_transformed = perspective(self.cornerPoints, self.img)  # 시점변환
                     self.game_state = color_classifier(img_transformed, self.model, self.points)  # 색 검출 
                 # self.get_logger().info("state: "+ self.game_state)
@@ -128,6 +137,14 @@ class BadukVision(Node):
             
         except Exception as e:
             self.get_logger().error(e)
+
+    # check_vision subscriber callback
+    def check_vision_callback(self, msg):
+        try:
+            self.check_vision = msg.check_vision
+
+        except Exception as e:
+            self.get_looger().error(e)
     
     # 초기화(교점 찾기), 앱에서 대국 시작을 눌렀을 때
     # 서비스 노드

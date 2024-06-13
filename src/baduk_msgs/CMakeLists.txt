@@ -18,6 +18,9 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/State.msg"
   "msg/Vision.msg"
   "srv/Initialize.srv"
+  "action/Fibonacci.action"
+  "srv/Square.srv"
+  "srv/AddTwoInts.srv"
 )
 
 if(BUILD_TESTING)
