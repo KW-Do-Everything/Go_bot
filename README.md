@@ -10,6 +10,7 @@ This Repository contains Vision and AI part of GoBot project.
 - [Usage](#usage)
 - [Contribution](#contribution)
 - [License](#license)
+- [Acknowledgements](#acknowledgements)
 - [Contact](#contact)
 
 
@@ -65,6 +66,24 @@ $ 최종 런치 파일 > 추후 수정 예정
 4. Push to the branch (git push origin feature/new-feature).
 5. Create a pull request.
 
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+
+
+## Acknowledgements
+
+This project uses code from the following projects:
+
+- [usb_cam](https://github.com/username/awesome-library) - To using usb webcam in ROS2, Licensed under the BSD 2-Clause License.
+
+- [KataGo](https://github.com/lightvector/KataGo) - This project relies on several other libraries, parts of libraries, or external files. For detailed license information, see the individual readmes and/or license files within the respective subdirectories of KataGo's repository.
+
+### License Information for KataGo
+
+KataGo is licensed under the MIT License. For the full license text, please refer to the [LICENSE](https://github.com/lightvector/KataGo/blob/master/LICENSE) file in the KataGo repository.
+
+Additionally, KataGo relies on several other libraries, parts of libraries, or external files including clblast, filesystem-1.5.8, half-2.1.0, httplib, mozilla-cacerts, nlohmann_json, sgfmill, and tclap-1.2.2. For the licenses for those libraries and/or files, see the individual readmes and/or license files for each one within their respective subdirectories within `cpp/external`. Additionally, `cpp/core/sha2.cpp` derives from another piece of external code and embeds its own license within that file.
 
 ## Contact
 //
