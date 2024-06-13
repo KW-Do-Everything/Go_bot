@@ -28,7 +28,7 @@ This Repository is for robot playing go. We use the following hardware.
 Required [ROS2 Humble](https://docs.ros.org/en/humble/index.html), Ubuntu 22.04, python >= 3.10, pip, CUDA, CUDNN</br>
 
 
-``` 
+``` bash
 # For Camera in Linux System
 $ sudo apt-get install v4l-utils
 
@@ -53,7 +53,7 @@ Click "add robot" button and the robot number that appears in the popup window i
 Edit robot_num in 'Go_bot/src/baduk_vision/baduk_vision/robotInfo.py' to yours.
 
 
-```
+```bash
 # At Go_bot/
 $ colcon build
 $ 최종 런치 파일 > 추후 수정 예정
