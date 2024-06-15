@@ -153,6 +153,8 @@ class gtp():
             print("WARNING: trying to play RESIGN as GTP move")
             self.history.append(["b",move])
             return True
+        if move == None:
+            print("None!!!!!!!!!!!!!!")
         self.write("play black "+move)
         answer=self.readline()
         if answer[0]=="=":

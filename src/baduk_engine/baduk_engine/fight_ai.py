@@ -5,6 +5,7 @@ from baduk_msgs.msg import Go, State# 수정 필요: 메시지 유형과 패키�
 from open_manipulator_msgs.srv import Setarmpos
 from baduk_engine.gtp import gtp  # 수정 필요: gtp 클래스의 위치
 from datetime import datetime
+from baduk_msgs.msg import Vision
 
 
 class GoGameProcessor(Node):
@@ -21,6 +22,16 @@ class GoGameProcessor(Node):
             self.state_listener_callback,
             10
         ) 
+
+        self.subscriber2 = self.create_subscription(
+            Vision,
+            'check_vision',
+            self.vision_listener_callback,
+            10
+        )
+        
+        self.vision_check = True # 움직일 때 :false, 멈추면 true
+        self.mv_sign = False
 
         # self.timer = self.create_timer(0.5, self.timer_callback)
 
@@ -47,6 +58,7 @@ class GoGameProcessor(Node):
         future = self.arm_client.call_async(req) 
         future.add_done_callback(self.handle_arm_response)
 
+
     def handle_arm_response(self, future):
         try:
             response = future.result()
@@ -59,6 +71,19 @@ class GoGameProcessor(Node):
             self.get_logger().error('Service call failed %r' % e)
 
 
+    def vision_listener_callback(self, msg2):
+        # 움직일 때 :false, 멈추면 true
+
+        if msg2.check_vision == True and self.vision_check == False: # 움직이다가 멈추면,
+            self.mv_sign = True  # 엔진 실행하는 사인
+            return True
+        else:
+            self.mv_sign = False # 엔진 멈춰 있으라는 사인
+            return False
+        # self.vision_check = msg2.check_vision
+        # self.get_logger().info("vision_check : " + str(self.vision_check))
+        # self.get_logger().info("check_vision : " + str(msg2.check_vision))
+        # self.get_logger().info("mv_sign : " + str(self.mv_sign))
 
 
     def state_listener_callback(self, msg):
@@ -66,6 +91,8 @@ class GoGameProcessor(Node):
             self.get_logger().warn(f'Received game state with invalid length: {len(msg.state)} characters. Expected 81 characters.')
             return  # 이 경우 함수를 안전하게 종료
         
+        self.get_logger().info('last: ' + self.last_state_msg)
+        self.get_logger().info('msg: ' + msg.state)
 
         if self.last_state_msg != msg.state: # 새로 입력 받으면,
 
@@ -100,6 +127,12 @@ class GoGameProcessor(Node):
 
             # 다 움직였다면
 
+            # self.get_logger().info("mv : " + str(self.mv_sign))
+            self.subscriber2
+            while(not self.vision_listener_callback):
+                self.get_logger().info("mv : " + str(self.mv_sign))
+                pass
+
             #앱에 상태 업데이트
 
             game_state = Go()
@@ -107,8 +140,12 @@ class GoGameProcessor(Node):
             game_state.territory = self.kata.final_score()
             game_state.winrate = [self.kata.white_win_rate(), 10000-self.kata.white_win_rate()]
             analyze_result = self.kata.analyze()
-            game_state.re_point = [analyze_result[i] for i in range(0, 10, 2)]
-            game_state.re_rate = [analyze_result[i] for i in range(1, 10, 2)]
+            try:
+                game_state.re_point = [analyze_result[i] for i in range(0, 10, 2)]
+                game_state.re_rate = [analyze_result[i] for i in range(1, 10, 2)]
+            except:
+                game_state.re_point = [analyze_result[i] for i in range(0, len(analyze_result), 2)]
+                game_state.re_rate = [analyze_result[i] for i in range(1, len(analyze_result), 2)]
 
 
             self.get_logger().info(
@@ -122,27 +159,33 @@ class GoGameProcessor(Node):
 
             self.publisher_1.publish(game_state) # 게임 상태 publishing 보내고,
 
-            tmp = msg.state
+
             
+
+            tmp = msg.state
             updated_state = self.update_board_state_by_point(tmp, white_point, 'w')
             
             # self.get_logger().info("msg.state : " + msg.state)
             # self.get_logger().info("tmp : " + tmp)
             # self.get_logger().info("last_state_msg old: " + self.last_state_msg) 
 
-            self.flag, self.position = self.diff_to_coordinates(self.kata.check_board(), tmp) #차이 비교해서 좌표 출력 / 차이 좌표 여러개 나올 수 있음
+            # self.flag, self.position = self.diff_to_coordinates(self.kata.check_board(), tmp) #차이 비교해서 좌표 출력 / 차이 좌표 여러개 나올 수 있음
+            self.flag, self.position = self.diff_to_coordinates(self.kata.check_board(), updated_state)
 
             if (self.flag == False): #들어내야하면
                 # place_stone2 = State()
                 for extract in self.position:
                     # place_stone2.state = extract #position
                     # place_stone2.flag = False
+                    
+                    updated_state = self.update_board_state_by_point(updated_state, extract, '.')   # 돌이 빠진 보드 업데이트
                     if extract != white_point:
                         self.send_arm_position(extract,False) #들어내라 시킴
+                        while( not self.vision_listener_callback):  # 로봇팔이 다 움직일때까지 대기
+                            self.get_logger().info('대기중...')
+                            pass
             else : # 차이가 없으면.
                 pass # 넘어감
-
-
 
             self.last_state_msg = updated_state #last_state_msg 업데이트 
             # self.get_logger().info("last_state_msg update : " + self.last_state_msg) 
@@ -189,7 +232,7 @@ class GoGameProcessor(Node):
         str_list = list(str1)
         str_list[index] = stone  # 'b', 'w', 또는 '.'를 사용하여 상태 업데이트
         
-        # self.get_logger().info("str_list : " + ''.join(str_list)) 
+        self.get_logger().info("str_list : " + ''.join(str_list)) 
 
 
         # 리스트를 다시 문자열로 변환
