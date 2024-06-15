@@ -51,10 +51,10 @@ class GoGameProcessor(Node):
             self.get_logger().info('Arm service not available, waiting again...') # 생성 실패시 오류코드
 
 
-    def send_arm_position(self, position, flag): #바둑돌 좌표 보내는 서비스
+    def send_arm_position(self, position, m_position): #바둑돌 좌표 보내는 서비스
         req = Setarmpos.Request()
         req.stone_position = position #좌표 업데이트
-        req.movement = flag # 플래그 업데이트
+        req.minus_stone_position = m_position
         future = self.arm_client.call_async(req) 
         future.add_done_callback(self.handle_arm_response)
 
@@ -112,6 +112,15 @@ class GoGameProcessor(Node):
             self.history1.append(white_point) #히스토리에 업데이트 한 다음
             self.get_logger().info(" white_point" + white_point)
 
+            tmp = msg.state
+            updated_state = self.update_board_state_by_point(tmp, white_point, 'w') # ai가 둔 곳을 msg.state에 업데이트
+            self.flag, self.position = self.diff_to_coordinates(self.kata.check_board(), updated_state) # 들어낸 좌표를 추출
+            for c in self.position:
+                updated_state = self.update_board_state_by_point(updated_state, c, '.')
+            self.get_logger().info("들어낼 좌표:")
+            for i in range(len(self.position)):
+                self.get_logger().info(self.position[i])
+            self.last_state_msg = updated_state #last_state_msg 업데이트 
 
             # white_point 좌표 는 로봇 팔로 보내야 함.
 
@@ -123,15 +132,15 @@ class GoGameProcessor(Node):
             # place_stone.state = white_point #position
             # place_stone.flag = True # 두기
             # self.publisher_2.publish(place_stone)
-            self.send_arm_position(white_point, True) # true : 두기 ######################여기서 흰돌 좌표 tele한테 보냄
+            self.send_arm_position(white_point, self.position) # true : 두기 ######################여기서 흰돌 좌표 tele한테 보냄
 
             # 다 움직였다면
 
             # self.get_logger().info("mv : " + str(self.mv_sign))
-            self.subscriber2
-            while(not self.vision_listener_callback):
-                self.get_logger().info("mv : " + str(self.mv_sign))
-                pass
+            # self.subscriber2
+            # while(not self.vision_listener_callback):
+            #     self.get_logger().info("mv : " + str(self.mv_sign))
+            #     pass
 
             #앱에 상태 업데이트
 
@@ -162,36 +171,36 @@ class GoGameProcessor(Node):
 
             
 
-            tmp = msg.state
-            updated_state = self.update_board_state_by_point(tmp, white_point, 'w')
+            # tmp = msg.state
+            # updated_state = self.update_board_state_by_point(tmp, white_point, 'w')
             
             # self.get_logger().info("msg.state : " + msg.state)
             # self.get_logger().info("tmp : " + tmp)
             # self.get_logger().info("last_state_msg old: " + self.last_state_msg) 
 
             # self.flag, self.position = self.diff_to_coordinates(self.kata.check_board(), tmp) #차이 비교해서 좌표 출력 / 차이 좌표 여러개 나올 수 있음
-            self.flag, self.position = self.diff_to_coordinates(self.kata.check_board(), updated_state)
+        #     self.flag, self.position = self.diff_to_coordinates(self.kata.check_board(), updated_state)
 
-            if (self.flag == False): #들어내야하면
-                # place_stone2 = State()
-                for extract in self.position:
-                    # place_stone2.state = extract #position
-                    # place_stone2.flag = False
+        #     if (self.flag == False): #들어내야하면
+        #         # place_stone2 = State()
+        #         for extract in self.position:
+        #             # place_stone2.state = extract #position
+        #             # place_stone2.flag = False
                     
-                    updated_state = self.update_board_state_by_point(updated_state, extract, '.')   # 돌이 빠진 보드 업데이트
-                    if extract != white_point:
-                        self.send_arm_position(extract,False) #들어내라 시킴
-                        while( not self.vision_listener_callback):  # 로봇팔이 다 움직일때까지 대기
-                            self.get_logger().info('대기중...')
-                            pass
-            else : # 차이가 없으면.
-                pass # 넘어감
+        #             updated_state = self.update_board_state_by_point(updated_state, extract, '.')   # 돌이 빠진 보드 업데이트
+        #             if extract != white_point:
+        #                 self.send_arm_position(extract,False) #들어내라 시킴
+        #                 while( not self.vision_listener_callback):  # 로봇팔이 다 움직일때까지 대기
+        #                     self.get_logger().info('대기중...')
+        #                     pass
+        #     else : # 차이가 없으면.
+        #         pass # 넘어감
 
-            self.last_state_msg = updated_state #last_state_msg 업데이트 
-            # self.get_logger().info("last_state_msg update : " + self.last_state_msg) 
+        #     self.last_state_msg = updated_state #last_state_msg 업데이트 
+        #     # self.get_logger().info("last_state_msg update : " + self.last_state_msg) 
 
-        else:
-            pass
+        # else:
+        #     pass
 
 
 

@@ -67,7 +67,7 @@ class BadukVision(Node):
         self.game_state_prev = "."*81
 
         # self.cornerPoints = np.float32([[335, 171], [980, 194], [1110, 860], [189, 839]])
-        self.cornerPoints = np.float32([[430, 345], [792, 372], [800, 706], [366, 673]])
+        self.cornerPoints = np.float32([[430, 345], [792, 372], [800, 706], [366, 678]])
         self.start_flag = True
 
         # check_vision topic subscriber
@@ -107,7 +107,7 @@ class BadukVision(Node):
             # else:
             #     self.check_color = True
             
-            if np.max(flow) > 5: #1.5:
+            if np.max(flow) > 1.5: #1.5:
                 self.check_color = False
                 self.get_logger().info(f'Motion Detected!')
             else:
