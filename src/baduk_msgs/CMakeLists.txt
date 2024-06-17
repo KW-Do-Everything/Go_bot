@@ -21,6 +21,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/Fibonacci.action"
   "srv/Square.srv"
   "srv/AddTwoInts.srv"
+  "msg/Finish.msg"
 )
 
 if(BUILD_TESTING)

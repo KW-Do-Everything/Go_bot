@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from baduk_msgs.msg import Go, State# 수정 필요: 메시지 유형과 패키지 이름
+from baduk_msgs.msg import Go, State, Finish# 수정 필요: 메시지 유형과 패키지 이름
 from open_manipulator_msgs.srv import Setarmpos
 from baduk_engine.gtp import gtp  # 수정 필요: gtp 클래스의 위치
 from datetime import datetime
@@ -29,6 +29,13 @@ class GoGameProcessor(Node):
             self.vision_listener_callback,
             10
         )
+
+        self.subscriber3 = self.create_subscription(
+            Finish,
+            'finish',
+            self.finish_listener_callback,
+            10
+        )
         
         self.vision_check = True # 움직일 때 :false, 멈추면 true
         self.mv_sign = False
@@ -39,14 +46,16 @@ class GoGameProcessor(Node):
         self.publisher_1 = self.create_publisher(Go, 'game_state_topic', 10) # to app
         # self.publisher_2 = self.create_publisher(State, 'robot_arm_move_topic', 10) # 로봇팔에 보내야하는 퍼블 리셔 point and flag
         
+
         self.position = ''
         self.last_state_msg = "." * 81
         self.point = ''
         self.history1 = [""] # 착점 모음1 - all points
         self.flag = True # 덜어낼지 둘지 정하는 True : place / False : 
+        self.finish = False
         
         
-        self.arm_client = self.create_client(Setarmpos, 'set_arm_position') # 여기 클라이언트 생성함,
+        self.arm_client = self.create_client(Setarmpos, 'set_arm_position') # 여기 로봇팔한테 보내는 클라이언트 생성함,
         while not self.arm_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Arm service not available, waiting again...') # 생성 실패시 오류코드
 
@@ -54,7 +63,7 @@ class GoGameProcessor(Node):
     def send_arm_position(self, position, m_position): #바둑돌 좌표 보내는 서비스
         req = Setarmpos.Request()
         req.stone_position = position #좌표 업데이트
-        req.minus_stone_position = m_position
+        req.minus_stone_position = m_position #빼는 좌표 [list]
         future = self.arm_client.call_async(req) 
         future.add_done_callback(self.handle_arm_response)
 
@@ -69,6 +78,13 @@ class GoGameProcessor(Node):
                 self.get_logger().info('Arm movement failed or did not return to position.')
         except Exception as e:
             self.get_logger().error('Service call failed %r' % e)
+
+    def finish_listener_callback(self, msg3):
+        if msg3.finish:
+            self.kata.reset()
+            self.finish = False
+            self.history1 = []
+            self.get_logger().info(self.kata.showboard())
 
 
     def vision_listener_callback(self, msg2):
@@ -91,35 +107,48 @@ class GoGameProcessor(Node):
             self.get_logger().warn(f'Received game state with invalid length: {len(msg.state)} characters. Expected 81 characters.')
             return  # 이 경우 함수를 안전하게 종료
         
-        self.get_logger().info('last: ' + self.last_state_msg)
-        self.get_logger().info('msg: ' + msg.state)
+        # self.get_logger().info('last: ' + self.last_state_msg)
+        # self.get_logger().info('msg: ' + msg.state)
 
         if self.last_state_msg != msg.state: # 새로 입력 받으면,
-
-            # self.get_logger().info(msg.state)
-            # self.get_logger().info(self.last_state_msg)
-
             self.black_input_point = self.point_update_by_diff(self.last_state_msg, msg.state) #차이로 좌표 뽑아내서
             
-            # self.get_logger().info("black_input_point : " + self.black_input_point)
+            # if type(self.black_input_point) == None:
+            self.get_logger().error("type error" + str(type(self.black_input_point)) + str(self.black_input_point)) ## 오류를 찾아서
 
-            # if self.black_input_point not in self.history1:
+
+
             self.kata.place_black(self.black_input_point) #검정 돌 엔진에 보내고,
             self.history1.append(self.black_input_point) #히스토리에 업데이트
 
 
             white_point = self.kata.play_white() # ai 가 생성 한 뒤, 
             self.history1.append(white_point) #히스토리에 업데이트 한 다음
-            self.get_logger().info(" white_point" + white_point)
+            self.get_logger().info("white_point " + white_point)
 
-            tmp = msg.state
-            updated_state = self.update_board_state_by_point(tmp, white_point, 'w') # ai가 둔 곳을 msg.state에 업데이트
-            self.flag, self.position = self.diff_to_coordinates(self.kata.check_board(), updated_state) # 들어낸 좌표를 추출
+            if self.is_valid_go_position(white_point):
+                self.get_logger().info("Good Point!")
+            else:
+                self.kata.reset()
+                self.history1 = []
+                game_state2 = Go()
+                game_state2.finish = True
+                self.publisher_1.publish(game_state2) # 초기화 해야해
+                self.get_logger().info("history : " + str(self.history1))
+                return
+
+
+            tmp = msg.state # msg.state 는 비전에서 받아온 상태
+            updated_state = self.update_board_state_by_point(tmp, white_point, 'w') # tmp 에 ai가 둔 곳을 msg.state에 업데이트
+            self.flag, self.position = self.diff_to_coordinates(self.kata.check_board(), updated_state) # 따낼 좌표를 추출
             for c in self.position:
-                updated_state = self.update_board_state_by_point(updated_state, c, '.')
+                updated_state = self.update_board_state_by_point(updated_state, c, '.') #따낼 좌표를 점으로 바꿈
+                self.history1.remove(c) #따낼 좌표를 history 에서 삭제
+
             self.get_logger().info("들어낼 좌표:")
-            for i in range(len(self.position)):
+            for i in range(len(self.position)): ############################################################
                 self.get_logger().info(self.position[i])
+
             self.last_state_msg = updated_state #last_state_msg 업데이트 
 
             # white_point 좌표 는 로봇 팔로 보내야 함.
@@ -149,6 +178,11 @@ class GoGameProcessor(Node):
             game_state.territory = self.kata.final_score()
             game_state.winrate = [self.kata.white_win_rate(), 10000-self.kata.white_win_rate()]
             analyze_result = self.kata.analyze()
+
+            if white_point == "PASS":
+                self.finish = True
+            game_state.finish = self.finish
+
             try:
                 game_state.re_point = [analyze_result[i] for i in range(0, 10, 2)]
                 game_state.re_rate = [analyze_result[i] for i in range(1, 10, 2)]
@@ -158,18 +192,24 @@ class GoGameProcessor(Node):
 
 
             self.get_logger().info(
-                'territory: "%s", winrate: %s, re_point: %s, re_rate: %s' % (
+                'territory: "%s", winrate: %s, re_point: %s, re_rate: %s, finish: %s' % (
                 game_state.territory,
                 game_state.winrate,  # 배열이나 리스트도 문자열로 자동 변환됩니다.
                 game_state.re_point,
-                game_state.re_rate
+                game_state.re_rate,
+                game_state.finish
                 )
             )
 
             self.publisher_1.publish(game_state) # 게임 상태 publishing 보내고,
 
 
-            
+
+            if self.finish == True:
+                self.kata.reset()
+                self.finish = False
+                self.history1 = []
+
 
             # tmp = msg.state
             # updated_state = self.update_board_state_by_point(tmp, white_point, 'w')
@@ -202,16 +242,36 @@ class GoGameProcessor(Node):
         # else:
         #     pass
 
+    def is_valid_go_position(self, position): # 들어온 좌표가 유효한지 확인
+        # 유효한 좌표는 A1~T19, I를 제외합니다.
+        if len(position) < 2 or len(position) > 3:
+            return False
+
+        column = position[0].upper()
+        row = position[1:]
+
+        if column in 'I':
+            return False  # 'I'는 바둑판에서 사용하지 않습니다.
+        
+        if column < 'A' or column > 'T':
+            return False  # 'A'에서 'T' 범위를 벗어납니다 (단, 'I' 제외).
+
+        if not row.isdigit():
+            return False  # 행 숫자가 아니면 유효하지 않습니다.
+        
+        row_number = int(row)
+        if row_number < 1 or row_number > 19:
+            return False  # 1에서 19 범위를 벗어납니다.
+
+        return True
+
 
 
 
     def point_update_by_diff(self, str1, str2):
         if len(str1) != len(str2) or len(str1) != 81: 
             raise ValueError("Strings must be 81 characters long")
-        
-        re_flag = True
-        coordinates_str = ''  # 변경된 위치의 바둑판 좌표를 저장할 문자열
-
+        tmp = ''
         for i in range(9):
             for j in range(9):
                 index = i * 9 + j
@@ -220,8 +280,11 @@ class GoGameProcessor(Node):
                     column = chr(j + ord('A') if j < 8 else j + ord('A') + 1)
                     row = str(9 - i)
                     point = column+row
-                    if point not in self.history1:
-                        return point
+                    if point in self.history1:
+                        self.history1.remove(point)
+                    elif point not in self.history1:
+                        tmp = point
+        return tmp
                     
 
     def update_board_state_by_point(self, str1, point, stone='w'):

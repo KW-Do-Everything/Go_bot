@@ -1,6 +1,7 @@
 import rclpy as rp
 from rclpy.node import Node
 from baduk_msgs.srv import Initialize
+from baduk_msgs.msg import Finish
 
 from baduk_vision.robotInfo import url4listner, robot_num
 
@@ -17,6 +18,12 @@ class ServerListener(Node):
         self.start = True
         self.listenerClient = self.create_client(Initialize, 'do_initialize')
         self.req = Initialize.Request()
+
+        self.finish_pub = self.create_publisher(
+            Finish,
+            'finish',
+            10
+        )
         self.init_firebase()
 
     # Firebase 초기화
@@ -27,6 +34,9 @@ class ServerListener(Node):
         })
         ref = db.reference('Robots/'+robot_num+'/init')
         ref.listen(self.firebase_listener)
+
+        ref_finish = db.reference('Robots/'+robot_num+'/finish')
+        ref_finish.listen(self.finish_listener)
     
     # Firebase Listner
     # 실시간 데이터베이스에 변경점이 있으면 감지하는 함수
@@ -46,12 +56,27 @@ class ServerListener(Node):
             if event.data == False:
                 self.start = True
 
+    def finish_listener(self, event):
+        self.get_logger().info(f'Firebase data changed: {event.data}')
+        try:
+            if event.data == True:
+                self.finish_request()
+        except:
+            self.get_logger().error("Error: Failed to Get 'finish' data")
+
 
     # 서비스 서버 노드 (초기화(교점 찾기)하라고 명령)
     def send_request(self):
         self.get_logger().info(f'send Request!!')
         self.req.do_initialize = True
         self.future = self.listenerClient.call_async(self.req)
+
+    # AI reset하라고 명령
+    def finish_request(self):
+        self.get_logger().info(f'send Finish Request!!')
+        msg = Finish()
+        msg.finish = True
+        self.finish_pub.publish(msg)
 
 
 def main(args=None):

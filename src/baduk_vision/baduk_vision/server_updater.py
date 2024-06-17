@@ -18,7 +18,7 @@ class ServerUpdater(Node):
         )
 
         self.last_state_msg = "."*361
-        self.subscriber = self.create_subscription(
+        self.subscriber1 = self.create_subscription(
             State,
             'game_state',
             self.state_listener_callback,
@@ -49,6 +49,7 @@ class ServerUpdater(Node):
         }
         
         self.updater(url, robot_num, "AI", data)
+        self.updater(url, robot_num, "finish", msg.finish)
 
     # 바둑판 상황 업데이트
     def state_update(self, msg):

@@ -5,10 +5,10 @@ from PIL import Image as PILImage
 import concurrent.futures
 
 def preprocess_image(img, x, y, index):
-    x1 = max(0, x - 20)
-    y1 = max(0, y - 20)
-    x2 = min(img.shape[1], x + 21)
-    y2 = min(img.shape[0], y + 21)
+    x1 = max(0, x - 26)
+    y1 = max(0, y - 26)
+    x2 = min(img.shape[1], x + 27)
+    y2 = min(img.shape[0], y + 27)
 
     cropped = img[int(y1):int(y2), int(x1):int(x2)]
     cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)

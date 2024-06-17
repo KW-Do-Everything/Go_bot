@@ -340,7 +340,7 @@ class gtp():
         
     def lz_analyze(self,color, time, min, max = None): # 현재 상태에서의 추천 수
         # analyzes = []
-        self.write("lz-analyze " + str(color) + " " + str(time) + " maxmoves " + str(min))
+        self.write("lz-analyze " + str(color) + " " + str(time) + " maxmoves " + str(5) + " minmoves " + str(5))
         answer = self.readlines()
         # analyzes.append(answer[2])
         info_list = answer[2].split(" info ")
@@ -630,13 +630,24 @@ def main():
     # print(kata.showboard()[1:21])
     # kata.play_black()
 
-
+    count = 0
     i = 0
-    while i < 5:
-        kata.play_black()
-        print(kata.showboard()[1:11])
-        kata.play_white()
-        print(kata.showboard()[1:11])
+    while i < 40:
+        print("black : " + kata.play_black())
+        # print(kata.showboard()[1:11])
+        tmp = kata.play_white()
+        if tmp == "RESIGN":
+            count += 1
+        print(f'white : {str(tmp)}')
+        print(kata.analyze())
+        # if count >2 or tmp == "PASS":
+        #     print(kata.final_score())
+        #     break
+        # if tmp == "PASS":
+        #     print(kata.final_score())
+        #     break
+        # print(type(kata.play_))
+        # print(kata.showboard()[1:11])
         i +=1
     # i = 0
     # while i < 5:

@@ -67,7 +67,7 @@ class BadukVision(Node):
         self.game_state_prev = "."*81
 
         # self.cornerPoints = np.float32([[335, 171], [980, 194], [1110, 860], [189, 839]])
-        self.cornerPoints = np.float32([[430, 345], [792, 372], [800, 706], [366, 678]])
+        self.cornerPoints = np.float32([[475, 350], [825, 359], [854, 738], [430, 723]])
         self.start_flag = True
 
         # check_vision topic subscriber
@@ -155,7 +155,7 @@ class BadukVision(Node):
 
             blur = cv2.GaussianBlur(img, (0, 0), 1)         # 가우시안 블러
             gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)   # grayscale 변환
-            canny = cv2.Canny(gray, 35, 40)                 # 캐니 엣지
+            canny = cv2.Canny(gray, 25, 40)                 # 캐니 엣지
             
             lines = line_detector(canny)                    # 라인 검출
             self.points = get_points(lines, 30)             # 교점 찾기
