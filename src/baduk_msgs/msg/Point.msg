@@ -1,0 +1,2 @@
+string stone_position
+string[] minus_stone_position

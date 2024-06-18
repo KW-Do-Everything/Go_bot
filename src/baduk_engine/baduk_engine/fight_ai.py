@@ -5,7 +5,7 @@ from baduk_msgs.msg import Go, State, Finish# 수정 필요: 메시지 유형과
 from open_manipulator_msgs.srv import Setarmpos
 from baduk_engine.gtp import gtp  # 수정 필요: gtp 클래스의 위치
 from datetime import datetime
-from baduk_msgs.msg import Vision
+from baduk_msgs.msg import Vision, Posion
 
 
 class GoGameProcessor(Node):
@@ -111,12 +111,14 @@ class GoGameProcessor(Node):
         # self.get_logger().info('msg: ' + msg.state)
 
         if self.last_state_msg != msg.state: # 새로 입력 받으면,
-            self.black_input_point = self.point_update_by_diff(self.last_state_msg, msg.state) #차이로 좌표 뽑아내서
+
+            self.black_input_point = self.point_update_by_diff(self.kata.check_board(), msg.state) #엔진과 비전의 차이로 흑돌의 좌표 뽑아내서
             
             # if type(self.black_input_point) == None:
-            self.get_logger().error("type error" + str(type(self.black_input_point)) + str(self.black_input_point)) ## 오류를 찾아서
+            self.get_logger().error("type error" + str(type(self.black_input_point)) + str(self.black_input_point)) ## 오류를 찾아서 출력
 
-
+            if self.black_input_point == '':
+                return 
 
             self.kata.place_black(self.black_input_point) #검정 돌 엔진에 보내고,
             self.history1.append(self.black_input_point) #히스토리에 업데이트
@@ -134,22 +136,20 @@ class GoGameProcessor(Node):
                 game_state2 = Go()
                 game_state2.finish = True
                 self.publisher_1.publish(game_state2) # 초기화 해야해
-                self.get_logger().info("history : " + str(self.history1))
+                self.get_logger().error("Oh yeah! game set")
                 return
 
 
             tmp = msg.state # msg.state 는 비전에서 받아온 상태
             updated_state = self.update_board_state_by_point(tmp, white_point, 'w') # tmp 에 ai가 둔 곳을 msg.state에 업데이트
-            self.flag, self.position = self.diff_to_coordinates(self.kata.check_board(), updated_state) # 따낼 좌표를 추출
+            self.position = self.diff_to_coordinates(self.kata.check_board(), updated_state) # 따낼 좌표를 추출
             for c in self.position:
-                updated_state = self.update_board_state_by_point(updated_state, c, '.') #따낼 좌표를 점으로 바꿈
                 self.history1.remove(c) #따낼 좌표를 history 에서 삭제
-
             self.get_logger().info("들어낼 좌표:")
             for i in range(len(self.position)): ############################################################
                 self.get_logger().info(self.position[i])
 
-            self.last_state_msg = updated_state #last_state_msg 업데이트 
+            self.last_state_msg = self.kata.check_board() #last_state_msg 업데이트 
 
             # white_point 좌표 는 로봇 팔로 보내야 함.
 
@@ -275,7 +275,7 @@ class GoGameProcessor(Node):
         for i in range(9):
             for j in range(9):
                 index = i * 9 + j
-                if str1[index] != str2[index]:
+                if str1[index] != str2[index] and str1[index] == '.':
                     # 바둑판 좌표는 보통 A1부터 T19까지 (I 제외) 사용합니다.
                     column = chr(j + ord('A') if j < 8 else j + ord('A') + 1)
                     row = str(9 - i)
@@ -327,16 +327,12 @@ class GoGameProcessor(Node):
         for i in range(9):
             for j in range(9):
                 index = i * 9 + j
-                if str1[index] != str2[index]:
+                if str1[index] != str2[index] and str1[index] == '.':
                     column = chr(j + ord('A') if j < 8 else j + ord('A') + 1)
                     row = str(9 - i)
                     point = column+row
                     coordinates_str.append(point)  # 좌표를 문자열에 추가하고 공백으로 구분
-                    if str1[index] == '.' and str2[index] != '.':
-                        re_flag = False
-                    else:
-                        re_flag = True
-        return re_flag, coordinates_str  # 문자열의 끝에 있는 공백을 제거
+        return coordinates_str  # 문자열의 끝에 있는 공백을 제거
 
 
 

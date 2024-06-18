@@ -38,18 +38,21 @@ class ServerUpdater(Node):
     
     # AI 분석 업데이트
     def ai_update(self, msg):
-        re = []
-        for i in range(5):
-            re.append(msg.re_point[i])
-            re.append(int(msg.re_rate[i]))
-        data = {
-            'territory': msg.territory,
-            'winRate': msg.winrate.tolist(),
-            'recommend': re
-        }
-        
-        self.updater(url, robot_num, "AI", data)
         self.updater(url, robot_num, "finish", msg.finish)
+        try:
+            re = []
+            for i in range(5):
+                re.append(msg.re_point[i])
+                re.append(int(msg.re_rate[i]))
+            data = {
+                'territory': msg.territory,
+                'winRate': msg.winrate.tolist(),
+                'recommend': re
+            }
+            
+            self.updater(url, robot_num, "AI", data)
+        except:
+            self.get_logger().error("re length not 5")
 
     # 바둑판 상황 업데이트
     def state_update(self, msg):
