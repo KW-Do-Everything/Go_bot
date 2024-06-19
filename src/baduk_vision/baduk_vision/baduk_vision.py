@@ -67,7 +67,7 @@ class BadukVision(Node):
         self.game_state_prev = "."*81
 
         # self.cornerPoints = np.float32([[335, 171], [980, 194], [1110, 860], [189, 839]])
-        self.cornerPoints = np.float32([[475, 350], [825, 359], [854, 738], [430, 723]])
+        self.cornerPoints = np.float32([[480, 355], [820, 367], [845, 730], [430, 710]])
         self.start_flag = True
 
         # check_vision topic subscriber

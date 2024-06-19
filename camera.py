@@ -1,6 +1,6 @@
 import cv2
 
-webcam = cv2.VideoCapture(0)
+webcam = cv2.VideoCapture(2)
 width = webcam.get(cv2.CAP_PROP_FRAME_WIDTH)
 height = webcam.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
