@@ -69,7 +69,9 @@ $ 최종 런치 파일 > 추후 수정 예정
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-
+## operation
+![KakaoTalk_20240619_183521639](https://github.com/KW-Do-Everything/Go_bot/assets/92098771/a8185f2d-d77c-41fc-aa1e-5e886c7f5895)
+![KakaoTalk_20240619_183521639_01](https://github.com/KW-Do-Everything/Go_bot/assets/92098771/e9feefb3-413e-42f6-ad15-d3182b521b05)
 
 ## Acknowledgements
 
