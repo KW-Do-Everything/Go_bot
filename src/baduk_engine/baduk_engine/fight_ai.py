@@ -5,7 +5,7 @@ from baduk_msgs.msg import Go, State, Finish# 수정 필요: 메시지 유형과
 from open_manipulator_msgs.srv import Setarmpos
 from baduk_engine.gtp import gtp  # 수정 필요: gtp 클래스의 위치
 from datetime import datetime
-from baduk_msgs.msg import Vision, Posion
+from baduk_msgs.msg import Vision, Point
 
 
 class GoGameProcessor(Node):
@@ -46,6 +46,7 @@ class GoGameProcessor(Node):
         self.publisher_1 = self.create_publisher(Go, 'game_state_topic', 10) # to app
         # self.publisher_2 = self.create_publisher(State, 'robot_arm_move_topic', 10) # 로봇팔에 보내야하는 퍼블 리셔 point and flag
         
+        self.point_topic = self.create_publisher(Point, 'Point_topic', 10)
 
         self.position = ''
         self.last_state_msg = "." * 81
@@ -55,29 +56,31 @@ class GoGameProcessor(Node):
         self.finish = False
         
         
-        self.arm_client = self.create_client(Setarmpos, 'set_arm_position') # 여기 로봇팔한테 보내는 클라이언트 생성함,
-        while not self.arm_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('Arm service not available, waiting again...') # 생성 실패시 오류코드
+        # self.arm_client = self.create_client(Setarmpos, 'set_arm_position') # 여기 로봇팔한테 보내는 클라이언트 생성함,
+        # while not self.arm_client.wait_for_service(timeout_sec=1.0):
+        #     self.get_logger().info('Arm service not available, waiting again...') # 생성 실패시 오류코드
 
 
-    def send_arm_position(self, position, m_position): #바둑돌 좌표 보내는 서비스
-        req = Setarmpos.Request()
-        req.stone_position = position #좌표 업데이트
-        req.minus_stone_position = m_position #빼는 좌표 [list]
-        future = self.arm_client.call_async(req) 
-        future.add_done_callback(self.handle_arm_response)
+    # def send_arm_position(self, position, m_position): #바둑돌 좌표 보내는 서비스
+    #     req = Setarmpos.Request()
+    #     req.stone_position = position #좌표 업데이트
+    #     req.minus_stone_position = m_position #빼는 좌표 [list]
+    #     future = self.arm_client.call_async(req) 
+    #     future.add_done_callback(self.handle_arm_response)
 
 
-    def handle_arm_response(self, future):
-        try:
-            response = future.result()
-            if response.arm_move_flag: #true면 = 로봇팔이 다 움직였으면,
-                self.get_logger().info(f'Arm successfully moved to {future.result().arm_move_flag} and returned.') # 서비스에서 리턴 받는거 출력
-                # self.get_logger().info(f'Arm successfully moved to and returned.')
-            else:
-                self.get_logger().info('Arm movement failed or did not return to position.')
-        except Exception as e:
-            self.get_logger().error('Service call failed %r' % e)
+    # def handle_arm_response(self, future):
+    #     try:
+    #         response = future.result()
+    #         if response.arm_move_flag: #true면 = 로봇팔이 다 움직였으면,
+    #             self.get_logger().info(f'Arm successfully moved to {future.result().arm_move_flag} and returned.') # 서비스에서 리턴 받는거 출력
+    #             # self.get_logger().info(f'Arm successfully moved to and returned.')
+    #         else:
+    #             self.get_logger().info('Arm movement failed or did not return to position.')
+    #     except Exception as e:
+    #         self.get_logger().error('Service call failed %r' % e)
+
+
 
     def finish_listener_callback(self, msg3):
         if msg3.finish:
@@ -149,9 +152,14 @@ class GoGameProcessor(Node):
             for i in range(len(self.position)): ############################################################
                 self.get_logger().info(self.position[i])
 
+
             self.last_state_msg = self.kata.check_board() #last_state_msg 업데이트 
 
             # white_point 좌표 는 로봇 팔로 보내야 함.
+
+            point_co = Point()
+            point_co.stone_position = white_point
+            point_co.minus_stone_position = self.position
 
 
 
@@ -161,7 +169,9 @@ class GoGameProcessor(Node):
             # place_stone.state = white_point #position
             # place_stone.flag = True # 두기
             # self.publisher_2.publish(place_stone)
-            self.send_arm_position(white_point, self.position) # true : 두기 ######################여기서 흰돌 좌표 tele한테 보냄
+            # self.send_arm_position(white_point, self.position) # true : 두기 ######################여기서 흰돌 좌표 tele한테 보냄
+
+            self.point_topic.publish(point_co) # 두고 뺄 좌표 토픽 발행
 
             # 다 움직였다면
 
