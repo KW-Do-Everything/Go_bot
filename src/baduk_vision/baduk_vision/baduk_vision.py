@@ -163,6 +163,23 @@ class BadukVision(Node):
             self.get_logger().info("Get Points!\n")
             print(self.points)
 
+             # 이미지에 라인을 그리기
+            line_img = img.copy()
+            
+            for rho, theta in np.concatenate((lines[0], lines[1])):
+                a = np.cos(theta)
+                b = np.sin(theta)
+                x0 = a * rho
+                y0 = b * rho
+                x1 = int(x0 + 1000 * (-b))
+                y1 = int(y0 + 1000 * (a))
+                x2 = int(x0 - 1000 * (-b))
+                y2 = int(y0 - 1000 * (a))
+                cv2.line(line_img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+            cv2.imwrite("/home/capstone1/Go_bot/detected_lines.png", line_img)  # 라인 검출 결과 이미지 저장
+
+
             # 이미지에 교점을 찍어서 저장 (확인용)
             test_img = img.copy()
             for col in self.points:

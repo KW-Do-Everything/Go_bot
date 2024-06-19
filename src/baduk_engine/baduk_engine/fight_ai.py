@@ -1,8 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from baduk_msgs.msg import Go, State, Finish# 수정 필요: 메시지 유형과 패키지 이름
-from open_manipulator_msgs.srv import Setarmpos
+from baduk_msgs.msg import Go, State, Finish# 수정 필요: 메시지 유형과 패키지 이름s
 from baduk_engine.gtp import gtp  # 수정 필요: gtp 클래스의 위치
 from datetime import datetime
 from baduk_msgs.msg import Vision, Point
@@ -87,7 +86,7 @@ class GoGameProcessor(Node):
             self.kata.reset()
             self.finish = False
             self.history1 = []
-            self.get_logger().info(self.kata.showboard())
+            self.get_logger().info("Finish!!!!!!!")
 
 
     def vision_listener_callback(self, msg2):
