@@ -67,7 +67,7 @@ class BadukVision(Node):
         self.game_state_prev = "."*81
 
         # self.cornerPoints = np.float32([[335, 171], [980, 194], [1110, 860], [189, 839]])
-        self.cornerPoints = np.float32([[480, 355], [820, 367], [845, 730], [430, 710]])
+        self.cornerPoints = np.float32([[480, 355], [815, 370], [830, 730], [430, 710]])
         self.start_flag = True
 
         # check_vision topic subscriber
@@ -184,7 +184,7 @@ class BadukVision(Node):
             test_img = img.copy()
             for col in self.points:
                 for (x, y) in col:
-                    cv2.circle(test_img, (int(x), int(y)), 12, (255, 0, 0), -1)
+                    cv2.circle(test_img, (int(x), int(y)), 15, (255, 0, 0), -1)
             cv2.imwrite("/home/capstone1/Go_bot/points.png", test_img)
 
             # 구한 교점을 json 파일로 저장
