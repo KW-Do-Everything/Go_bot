@@ -6,5 +6,5 @@ opencv-python==4.10.0.82
 scikit-learn==1.5.0
 ultralytics==8.2.28
 torch
-torchvisioin
+torchvision
 torchaudio

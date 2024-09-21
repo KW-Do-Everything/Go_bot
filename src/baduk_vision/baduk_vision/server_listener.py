@@ -2,7 +2,7 @@ import rclpy as rp
 from rclpy.node import Node
 from baduk_msgs.srv import Initialize
 
-from baduk_vision.robotInfo import url4listner, robot_num
+from baduk_vision.robotInfo import url4listener, robot_num
 
 import firebase_admin
 from firebase_admin import credentials
@@ -21,14 +21,17 @@ class ServerListener(Node):
 
     # Firebase 초기화
     def init_firebase(self):
-        cred = credentials.Certificate("/home/capstone2/Go_bot/src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json")
+        cred = credentials.Certificate("/home/capstone/Go_bot/src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json")
         firebase_admin.initialize_app(cred, {
-            'databaseURL': url4listner
+            'databaseURL': url4listener
         })
-        ref = db.reference('Robots/'+robot_num+'/init')
-        ref.listen(self.firebase_listener)
+        ref_baduk = db.reference('Robots/'+robot_num+'/baduk/init')
+        ref_baduk.listen(self.firebase_listener)
+
+        ref_othello = db.reference('Robots/'+robot_num+'/othello/init')
+        ref_othello.listen(self.firebase_listener)
     
-    # Firebase Listner
+    # Firebase Listener
     # 실시간 데이터베이스에 변경점이 있으면 감지하는 함수
     def firebase_listener(self, event):
         if self.start == True:

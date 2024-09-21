@@ -48,13 +48,13 @@ class ServerUpdater(Node):
             'recommend': re
         }
         
-        self.updater(url, robot_num, "AI", data)
+        self.updater(url, robot_num, msg.game + "/AI", data)
 
     # 바둑판 상황 업데이트
     def state_update(self, msg):
         data = msg.state
 
-        self.updater(url, robot_num, "state", data)
+        self.updater(url, robot_num, msg.game + "/state", data)
 
     # Firebase 실시간 데이터 베이스에 데이터 업데이트
     def updater(self, url, robot_num, key, data):
