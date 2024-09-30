@@ -9,6 +9,11 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 
+import os
+
+home_dir = os.path.expanduser("~")
+project_path = os.path.join(home_dir, "Go_bot")
+
 
 class ServerListener(Node):
 
@@ -28,7 +33,7 @@ class ServerListener(Node):
 
     # Firebase 초기화
     def init_firebase(self):
-        cred = credentials.Certificate("/home/capstone/Go_bot/src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json")
+        cred = credentials.Certificate(os.path.join(project_path, "src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json"))
         firebase_admin.initialize_app(cred, {
             'databaseURL': url4listener
         })

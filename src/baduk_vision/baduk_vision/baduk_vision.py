@@ -22,6 +22,9 @@ import pathlib
 temp = pathlib.PosixPath
 pathlib.WindowsPath = pathlib.PosixPath
 
+home_dir = os.path.expanduser("~")
+project_path = os.path.join(home_dir, "Go_bot")
+
 class BadukVision(Node):
 
     def __init__(self):
@@ -45,7 +48,7 @@ class BadukVision(Node):
         self.check_color = False
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = YOLO('/home/capstone/Go_bot/model/best.pt', task='classify') # YOLOv8-cls
+        self.model = YOLO(os.path.join(project_path, 'model/best.pt'), task='classify') # YOLOv8-cls
         self.model = self.model.to(self.device)
 
         # Service for do_initialize client
@@ -120,11 +123,11 @@ class BadukVision(Node):
             
             if self.points is None: # 교점 정보가 없으면
                 # json 파일이 없으면 
-                if not os.path.isfile('/home/capstone/Go_bot/points.json'):
+                if not os.path.isfile(os.path.join(project_path, 'points.json')):
                     self.get_logger().error(f'Initialize First!')   # 초기화를 하라고 출력
                 else:   # json 파일이 있으면
                     # 파일 열어서 self.points에 저장
-                    with open('/home/capstone/Go_bot/points.json', 'r') as jsonfile:
+                    with open(os.path.join(project_path, 'points.json'), 'r') as jsonfile:
                         self.points = json.load(jsonfile)
             else:   # 교점 정보가 있으면
                 if (self.img.size != 0) and self.check_color and self.check_vision: # 이미지가 온전하고, 바둑판 위의 움직임이 없으면
@@ -150,7 +153,7 @@ class BadukVision(Node):
     def initialize_points(self, req, res):
         if req.do_initialize:   # 클라이언트에서 요청이 왔을 때
             img = perspective(self.cornerPoints, self.img)  # 시점 변환
-            cv2.imwrite("/home/capstone/Go_bot/points.png", img)
+            cv2.imwrite(os.path.join(project_path, "points.png"), img)
 
             blur = cv2.GaussianBlur(img, (0, 0), 1)         # 가우시안 블러
             gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)   # grayscale 변환
@@ -176,7 +179,7 @@ class BadukVision(Node):
                 y2 = int(y0 - 1000 * (a))
                 cv2.line(line_img, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-            cv2.imwrite("/home/capstone/Go_bot/detected_lines.png", line_img)  # 라인 검출 결과 이미지 저장
+            cv2.imwrite(os.path.join(project_path, "detected_lines.png"), line_img)  # 라인 검출 결과 이미지 저장
 
 
             # 이미지에 교점을 찍어서 저장 (확인용)
@@ -184,10 +187,10 @@ class BadukVision(Node):
             for col in self.points:
                 for (x, y) in col:
                     cv2.circle(test_img, (int(x), int(y)), 12, (255, 0, 0), -1)
-            cv2.imwrite("/home/capstone2/Go_bot/points.png", test_img)
+            cv2.imwrite(os.path.join(project_path, "points.png"), test_img)
 
             # 구한 교점을 json 파일로 저장
-            file = '/home/capstone/Go_bot/points.json'
+            file = os.path.join(project_path, 'points.json')
             with open(file, 'w') as json_file:
                 json.dump(self.points, json_file)
 

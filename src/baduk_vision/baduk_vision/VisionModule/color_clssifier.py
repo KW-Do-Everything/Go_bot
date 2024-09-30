@@ -4,6 +4,11 @@ import torch
 from PIL import Image as PILImage
 import concurrent.futures
 
+import os
+
+home_dir = os.path.expanduser("~")
+project_path = os.path.join(home_dir, "Go_bot")
+
 def preprocess_image(img, x, y, index):
     x1 = max(0, x - 15)
     y1 = max(0, y - 15)
@@ -17,7 +22,7 @@ def preprocess_image(img, x, y, index):
 
     return index, cropped
 
-from torch.cuda.amp import autocast
+from torch.amp import autocast
 
 def color_classifier(img: np.ndarray, model, points: list) -> str:
     """
@@ -29,18 +34,20 @@ def color_classifier(img: np.ndarray, model, points: list) -> str:
     """
 
     # 확인용 이미지 저장
-    cv2.imwrite("/home/capstone/Go_bot/testImg.jpg", img)
+    cv2.imwrite(os.path.join(project_path,'testImg.jpg'), img)
 
     img_list = []
     game_state = ""
 
-    cv2.imwrite("/home/capstone/Go_bot/testImg.jpg", img)
+    cv2.imwrite(os.path.join(project_path, 'testImg.jpg'), img)
 
     # 전처리 병렬화
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [executor.submit(preprocess_image, img, x, y, i * len(col) + j)
-                   for i, col in enumerate(points)
-                   for j, (x, y) in enumerate(col)]
+    with concurrent.futures.ThreadPoolExecutor() as executor:                
+
+        futures = [executor.submit(othello_preprocess_image, img, x, y, points[i+1][j+1][0], points[i+1][j+1][1], i * len(col) + j)
+                   for i, col in enumerate(points[:-1]) 
+                   for j, (x, y) in enumerate(col) 
+                   if j % 9 != 8]
 
         for future in concurrent.futures.as_completed(futures):
             index, cropped = future.result()
@@ -90,24 +97,24 @@ def othello_color_classifier(img: np.ndarray, model, points: list) -> str:
         img: perspective transform된 입력 영상
         points: 바둑판 교점 좌표
     출력
-        game_state: str 81자리 문자열
+        game_state: str 64자리 문자열
     """
 
     # 확인용 이미지 저장
-    cv2.imwrite("/home/capstone/Go_bot/o_testImg.jpg", img)
+    cv2.imwrite(os.path.join(project_path, 'o_testImg.jpg'), img)
 
     img_list = []
     game_state = ""
 
-    cv2.imwrite("/home/capstone/Go_bot/o_testImg.jpg", img)
+    cv2.imwrite(os.path.join(project_path, 'o_testImg.jpg'), img)
 
     # 전처리 병렬화
     with concurrent.futures.ThreadPoolExecutor() as executor:                
 
-        futures = [executor.submit(othello_preprocess_image, img, x, y, points[i + 10][0], points[i + 10][1], i * len(col) + j)
-                   for i, col in enumerate(points[:-8])
-                   if i % 8 != 0
-                   for j, (x, y) in enumerate(col)]
+        futures = [executor.submit(othello_preprocess_image, img, x, y, points[i+1][j+1][0], points[i+1][j+1][1], i * len(col) + j)
+                   for i, col in enumerate(points[:-1]) 
+                   for j, (x, y) in enumerate(col) 
+                   if j % 8 != 7]
 
         for future in concurrent.futures.as_completed(futures):
             index, cropped = future.result()
@@ -134,7 +141,7 @@ def othello_color_classifier(img: np.ndarray, model, points: list) -> str:
             game_state += '.'
 
     if len(game_state) != 64:
-        raise ValueError("Game state length is not 81")
+        raise ValueError("Game state length is not 64")
     
     print(game_state)
 

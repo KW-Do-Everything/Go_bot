@@ -18,3 +18,5 @@ ultralytics==8.2.28
 torch
 torchvision
 torchaudio
+
+scikit-learn
