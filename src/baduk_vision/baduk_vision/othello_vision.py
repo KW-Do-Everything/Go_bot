@@ -22,7 +22,7 @@ import pathlib
 temp = pathlib.PosixPath
 pathlib.WindowsPath = pathlib.PosixPath
 
-class BadukVision(Node):
+class OthelloVision(Node):
 
     def __init__(self):
         super().__init__('baduk_vision')
@@ -66,7 +66,7 @@ class BadukVision(Node):
         self.game_state = "."*81
         self.game_state_prev = "."*81
 
-        self.cornerPoints = np.float32([[560, 317], [955, 343], [1003, 762], [473, 710]])
+        self.cornerPoints = np.float32([[499, 262], [927, 233], [1001, 642], [443, 652]])
         self.start_flag = True
 
         # check_vision topic subscriber
@@ -120,11 +120,11 @@ class BadukVision(Node):
             
             if self.points is None: # 교점 정보가 없으면
                 # json 파일이 없으면 
-                if not os.path.isfile('/home/capstone/Go_bot/points.json'):
+                if not os.path.isfile('/home/capstone/Go_bot/othello_points.json'):
                     self.get_logger().error(f'Initialize First!')   # 초기화를 하라고 출력
                 else:   # json 파일이 있으면
                     # 파일 열어서 self.points에 저장
-                    with open('/home/capstone/Go_bot/points.json', 'r') as jsonfile:
+                    with open('/home/capstone/Go_bot/othello_points.json', 'r') as jsonfile:
                         self.points = json.load(jsonfile)
             else:   # 교점 정보가 있으면
                 if (self.img.size != 0) and self.check_color and self.check_vision: # 이미지가 온전하고, 바둑판 위의 움직임이 없으면
@@ -150,7 +150,7 @@ class BadukVision(Node):
     def initialize_points(self, req, res):
         if req.do_initialize:   # 클라이언트에서 요청이 왔을 때
             img = perspective(self.cornerPoints, self.img)  # 시점 변환
-            cv2.imwrite("/home/capstone/Go_bot/points.png", img)
+            cv2.imwrite("/home/capstone/Go_bot/othello_points.png", img)
 
             blur = cv2.GaussianBlur(img, (0, 0), 1)         # 가우시안 블러
             gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)   # grayscale 변환
@@ -184,10 +184,10 @@ class BadukVision(Node):
             for col in self.points:
                 for (x, y) in col:
                     cv2.circle(test_img, (int(x), int(y)), 12, (255, 0, 0), -1)
-            cv2.imwrite("/home/capstone2/Go_bot/points.png", test_img)
+            cv2.imwrite("/home/capstone/Go_bot/o_points.png", test_img)
 
             # 구한 교점을 json 파일로 저장
-            file = '/home/capstone/Go_bot/points.json'
+            file = '/home/capstone/Go_bot/othello_points.json'
             with open(file, 'w') as json_file:
                 json.dump(self.points, json_file)
 
@@ -206,7 +206,7 @@ class BadukVision(Node):
         # self.game_state는 카메라 입장에서본 상황.
         # 퍼블리시 할때는 사용자 입장에서본 상황을 주고 싶음. -> 문자열을 통째로 뒤집기
         msg.state = self.game_state[:: -1]
-        msg.game = 'baduk'
+        msg.game = 'othello'
 
         self.statePublisher.publish(msg)
         #self.get_logger().info(f'{msg.state}')
@@ -215,11 +215,11 @@ class BadukVision(Node):
 def main(args=None):
     rp.init(args=args)
 
-    badukVision = BadukVision()
-    rp.spin(badukVision)
+    othelloVision = OthelloVision()
+    rp.spin(othelloVision)
 
     cv2.destroyAllWindows()
-    badukVision.destroy_node()
+    othelloVision.destroy_node()
     rp.shutdown
 
 if __name__ == '__main__':

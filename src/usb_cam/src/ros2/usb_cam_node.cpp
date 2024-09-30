@@ -69,7 +69,7 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   this->declare_parameter("image_height", 960);
   this->declare_parameter("image_width", 1280);
   this->declare_parameter("io_method", "mmap");
-  this->declare_parameter("pixel_format", "yuyv");
+  this->declare_parameter("pixel_format", "mjpeg2rgb");
   this->declare_parameter("av_device_format", "YUV422P");
   this->declare_parameter("video_device", "/dev/video2");
   this->declare_parameter("brightness", 0);  // 0-255, -1 "leave alone"

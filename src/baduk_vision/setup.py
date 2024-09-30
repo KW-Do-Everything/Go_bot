@@ -27,6 +27,7 @@ setup(
             'test_publisher=baduk_vision.test_publisher:main',
             'baduk_vision=baduk_vision.baduk_vision:main',
             'server_listener=baduk_vision.server_listener:main',
+            'othello_vision=baduk_vision.othello_vision:main',
 
             #'python_executable_name = pkg_name.python_executable_name:main'
         ],

@@ -3,7 +3,7 @@ from rclpy.node import Node
 from baduk_msgs.srv import Initialize
 from baduk_msgs.msg import Finish
 
-from baduk_vision.robotInfo import url4listner, robot_num
+from baduk_vision.robotInfo import url4listener, robot_num
 
 import firebase_admin
 from firebase_admin import credentials
@@ -28,19 +28,26 @@ class ServerListener(Node):
 
     # Firebase 초기화
     def init_firebase(self):
-        cred = credentials.Certificate("/home/capstone1/Go_bot/src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json")
+        cred = credentials.Certificate("/home/capstone/Go_bot/src/baduk_vision/app-for-baduk-robot-5vzlm0-firebase-adminsdk-k8czr-3f94cbab09.json")
         firebase_admin.initialize_app(cred, {
-            'databaseURL': url4listner
+            'databaseURL': url4listener
         })
-        ref = db.reference('Robots/'+robot_num+'/init')
-        ref.listen(self.firebase_listener)
+        ref_baduk = db.reference('Robots/'+robot_num+'/baduk/init')
+        ref_baduk.listen(self.baduk_listener)
 
-        ref_finish = db.reference('Robots/'+robot_num+'/finish')
-        ref_finish.listen(self.finish_listener)
+        ref_baduk_finish = db.reference('Robots/'+robot_num+'/baduk/finish')
+        ref_baduk_finish.listen(self.baduk_finish_listener)
+
+
+        ref_othello = db.reference('Robots/'+robot_num+'/othello/init')
+        ref_othello.listen(self.othello_listener)
+
+        ref_othello_finish = db.reference('Robots/'+robot_num+'/othello/finish')
+        ref_othello_finish.listen(self.othello_finish_listener)
     
-    # Firebase Listner
+    # Firebase Listener
     # 실시간 데이터베이스에 변경점이 있으면 감지하는 함수
-    def firebase_listener(self, event):
+    def baduk_listener(self, event):
         if self.start == True:
             self.get_logger().info(f'Firebase data changed: {event.data}')
             try:
@@ -56,7 +63,31 @@ class ServerListener(Node):
             if event.data == False:
                 self.start = True
 
-    def finish_listener(self, event):
+    def baduk_finish_listener(self, event):
+        self.get_logger().info(f'Firebase data changed: {event.data}')
+        try:
+            if event.data == True:
+                self.finish_request()
+        except:
+            self.get_logger().error("Error: Failed to Get 'finish' data")
+
+    def othello_listener(self, event):
+        if self.start == True:
+            self.get_logger().info(f'Firebase data changed: {event.data}')
+            try:
+                # 앱에서 대국시작 버튼을 누르면 초기화(교점 찾기) 서비스 요청
+                if event.data == True:
+                    self.send_request()
+                    self.start = False
+            except:
+                self.get_logger().error("Error: Failed to Get 'init' data")
+        else:
+            self.get_logger().info(f'Firebase data changed: {event.data}')
+            # 앱에서 대국종료 버튼을 누르면 start변수 False로 바꾸기
+            if event.data == False:
+                self.start = True
+
+    def othello_finish_listener(self, event):
         self.get_logger().info(f'Firebase data changed: {event.data}')
         try:
             if event.data == True:
