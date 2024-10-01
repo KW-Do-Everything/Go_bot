@@ -22,6 +22,9 @@ import pathlib
 temp = pathlib.PosixPath
 pathlib.WindowsPath = pathlib.PosixPath
 
+import asyncio
+import websockets
+
 home_dir = os.path.expanduser("~")
 project_path = os.path.join(home_dir, "Go_bot")
 
@@ -80,6 +83,8 @@ class BadukVision(Node):
             10
         )
         self.check_vision = True
+
+        self.loop = asyncio.get_event_loop()
 
 
     # 이미지가 들어오는 이미지 구독 노드
@@ -204,15 +209,38 @@ class BadukVision(Node):
             return res
     
     def state_callback(self):
-        msg = State()
 
-        # self.game_state는 카메라 입장에서본 상황.
-        # 퍼블리시 할때는 사용자 입장에서본 상황을 주고 싶음. -> 문자열을 통째로 뒤집기
-        msg.state = self.game_state[:: -1]
-        msg.game = 'baduk'
+        # AI Server socket comm ver.
+        
+        server_uri = 'qlak315.iptime.org:20310'
+        data = {
+            'game': 'othello',
+            'state': self.game_state
+        }
 
-        self.statePublisher.publish(msg)
-        #self.get_logger().info(f'{msg.state}')
+        async def send_to_server():
+            try:
+                # websocket 연결
+                async with websockets.connect(server_uri) as websocket:
+                    json_data = json.dumps(data)
+                    await websocket.send(json_data)
+
+            except Exception as e:
+                self.get_logger().error(f"Failed to send data to Server: {e}")
+
+
+
+        # ROS message ver.
+        # If you want to use the ROS version, uncomment the following code and comment out the AI Server socket communication version code.
+        # msg = State()
+
+        # # self.game_state는 카메라 입장에서본 상황.
+        # # 퍼블리시 할때는 사용자 입장에서본 상황을 주고 싶음. -> 문자열을 통째로 뒤집기
+        # msg.state = self.game_state[:: -1]
+        # msg.game = 'baduk'
+
+        # self.statePublisher.publish(msg)
+        # #self.get_logger().info(f'{msg.state}')
 
 
 def main(args=None):
