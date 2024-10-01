@@ -228,7 +228,7 @@ class OthelloVision(Node):
             except Exception as e:
                 self.get_logger().error(f"Failed to send data to Server: {e}")
 
-
+        self.loop.create_task(send_to_server)
 
         # ROS message ver.
         # If you want to use the ROS version, uncomment the following code and comment out the AI Server socket communication version code.
