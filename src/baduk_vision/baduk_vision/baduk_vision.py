@@ -37,7 +37,7 @@ class BadukVision(Node):
         # Image subscriber
         self.imgSubscriber = self.create_subscription(
             Image,
-            'image_raw',
+            '/camera1/image_raw',
             self.image_callback,
             10
         )

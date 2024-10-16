@@ -17,7 +17,9 @@ setup(
     maintainer_email='sirius584@naver.com',
     description='TODO: Package description',
     license='TODO: License declaration',
-    tests_require=['pytest'],
+    extras_require={
+        'test': ['pytest'],
+    },
     entry_points={
         'console_scripts': [
             'game_state_subscriber = jebal.gtp_sub:main',

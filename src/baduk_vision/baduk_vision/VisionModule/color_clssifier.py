@@ -60,7 +60,7 @@ def color_classifier(img: np.ndarray, model, points: list) -> str:
     # 모델 예측
     with torch.no_grad():
         img_batch_tensor = torch.tensor(img_batch).permute(0, 3, 1, 2).float().to("cuda")  # Change to tensor and permute to match model input
-        with autocast():
+        with autocast(device_type='cuda'):
             predictions = model(img_batch_tensor)
 
     # 예측 결과 처리
@@ -111,10 +111,10 @@ def othello_color_classifier(img: np.ndarray, model, points: list) -> str:
     # 전처리 병렬화
     with concurrent.futures.ThreadPoolExecutor() as executor:                
 
-        futures = [executor.submit(othello_preprocess_image, img, x, y, points[i+1][j+1][0], points[i+1][j+1][1], i * len(col) + j)
-                   for i, col in enumerate(points[:-1]) 
-                   for j, (x, y) in enumerate(col) 
-                   if j % 8 != 7]
+        futures = [executor.submit(othello_preprocess_image, img, x, y, points[i + 1][j + 1][0], points[i + 1][j + 1][1], i * len(col) + j)
+            for i, col in enumerate(points[:-1])
+            for j, (x, y) in enumerate(col)
+            if j != 8 ]
 
         for future in concurrent.futures.as_completed(futures):
             index, cropped = future.result()
@@ -124,10 +124,26 @@ def othello_color_classifier(img: np.ndarray, model, points: list) -> str:
     img_list.sort(key=lambda x: x[0])
     img_batch = np.array([img for _, img in img_list], dtype=np.float32)
 
+    # 이미지들을 하나로 합쳐 저장
+    # 각 이미지를 8x8 격자로 배치
+    rows = []
+    for i in range(8):
+        row = np.concatenate(img_batch[i*8:(i+1)*8], axis=1)  # 가로로 붙임
+        rows.append(row)
+    combined_image = np.concatenate(rows, axis=0)  # 세로로 붙임
+
+    # 이미지를 [0, 255] 범위로 변환
+    combined_image = (combined_image * 255).astype(np.uint8)
+
+    # 합친 이미지 저장
+    combined_image_path = os.path.join(project_path, 'combined_othello_image.jpg')
+    cv2.imwrite(combined_image_path, combined_image)
+    print(f"Combined image saved at {combined_image_path}")
+
     # 모델 예측
     with torch.no_grad():
         img_batch_tensor = torch.tensor(img_batch).permute(0, 3, 1, 2).float().to("cuda")  # Change to tensor and permute to match model input
-        with autocast():
+        with autocast(device_type='cuda'):
             predictions = model(img_batch_tensor)
 
     # 예측 결과 처리
@@ -143,6 +159,6 @@ def othello_color_classifier(img: np.ndarray, model, points: list) -> str:
     if len(game_state) != 64:
         raise ValueError("Game state length is not 64")
     
-    print(game_state)
+    # print(game_state)
 
     return game_state

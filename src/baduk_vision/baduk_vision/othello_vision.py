@@ -37,7 +37,7 @@ class OthelloVision(Node):
         # Image subscriber
         self.imgSubscriber = self.create_subscription(
             Image,
-            'image_raw',
+            '/camera0/image_raw',
             self.image_callback,
             10
         )
@@ -72,7 +72,7 @@ class OthelloVision(Node):
         self.game_state = "."*64
         self.game_state_prev = "."*64
 
-        self.cornerPoints = np.float32([(521, 401), (951, 383), (1048, 813), (464, 817)])
+        self.cornerPoints = np.float32([(523, 402), (953, 382), (1047, 813), (462, 814)])
         self.start_flag = True
 
         # check_vision topic subscriber
@@ -137,8 +137,9 @@ class OthelloVision(Node):
             else:   # 교점 정보가 있으면
                 if (self.img.size != 0) and self.check_color and self.check_vision: # 이미지가 온전하고, 바둑판 위의 움직임이 없으면
                     img_transformed = perspective(self.cornerPoints, self.img)  # 시점변환
-                    self.game_state = color_classifier(img_transformed, self.model, self.points)  # 색 검출 
-                # self.get_logger().info("state: "+ self.game_state)
+                    self.game_state = othello_color_classifier(img_transformed, self.model, self.points)  # 색 검출 
+                    
+                self.get_logger().info("state: "+ self.game_state)
 
             self.prev_gray = self.gray
             
@@ -195,7 +196,7 @@ class OthelloVision(Node):
             cv2.imwrite(os.path.join(project_path, 'o_points.png'), test_img)
 
             # 구한 교점을 json 파일로 저장
-            file = os.path.join(project_path, 'Go_bot/othello_points.json')
+            file = os.path.join(project_path, 'othello_points.json')
             with open(file, 'w') as json_file:
                 json.dump(self.points, json_file)
 
@@ -218,17 +219,17 @@ class OthelloVision(Node):
             'state': self.game_state
         }
 
-        async def send_to_server():
-            try:
-                # websocket 연결
-                async with websockets.connect(server_uri) as websocket:
-                    json_data = json.dumps(data)
-                    await websocket.send(json_data)
+        # async def send_to_server():
+        #     try:
+        #         # websocket 연결
+        #         async with websockets.connect(server_uri) as websocket:
+        #             json_data = json.dumps(data)
+        #             await websocket.send(json_data)
 
-            except Exception as e:
-                self.get_logger().error(f"Failed to send data to Server: {e}")
+        #     except Exception as e:
+        #         self.get_logger().error(f"Failed to send data to Server: {e}")
 
-        self.loop.create_task(send_to_server)
+        # self.loop.create_task(send_to_server)
 
         # ROS message ver.
         # If you want to use the ROS version, uncomment the following code and comment out the AI Server socket communication version code.

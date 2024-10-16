@@ -20,7 +20,9 @@ setup(
     maintainer_email='capstone@todo.todo',
     description='TODO: Package description',
     license='TODO: License declaration',
-    tests_require=['pytest'],
+    extras_require={
+        'test': ['pytest'],
+    },
     entry_points={
         'console_scripts': [
             'server_updater=baduk_vision.server_updater:main',
