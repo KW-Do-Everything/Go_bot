@@ -1,0 +1,2 @@
+string stone_position
+string[] reverse_stone_position

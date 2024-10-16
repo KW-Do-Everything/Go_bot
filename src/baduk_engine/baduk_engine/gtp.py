@@ -24,9 +24,9 @@ import select
 
 
 # 실행할 외부 프로그램의 경로
-exe_path = '/home/capstone1/kata/katago'
+exe_path = '/home/capstone/katago/katago'
 # 외부 프로그램에 전달할 인자, 예를 들어 'gtp' 명령어 
-args = ['gtp', '-model', '/home/capstone1/kata/kata99.gz']
+args = ['gtp', '-model', '/home/capstone/katago/kata19.gz']
 
 #### 뒤에 cfg 옵션 나중에 설정해야함####
 
@@ -630,32 +630,32 @@ def main():
     # print(kata.showboard()[1:21])
     # kata.play_black()
 
-    count = 0
-    i = 0
-    while i < 40:
-        print("black : " + kata.play_black())
-        # print(kata.showboard()[1:11])
-        tmp = kata.play_white()
-        if tmp == "RESIGN":
-            count += 1
-        print(f'white : {str(tmp)}')
-        print(kata.analyze())
-        # if count >2 or tmp == "PASS":
-        #     print(kata.final_score())
-        #     break
-        # if tmp == "PASS":
-        #     print(kata.final_score())
-        #     break
-        # print(type(kata.play_))
-        # print(kata.showboard()[1:11])
-        i +=1
+    # count = 0
     # i = 0
-    # while i < 5:
-    #     kata.play_black()
-    #     print(kata.check_board())
-    #     kata.play_white()
-    #     print(kata.check_board())
+    # while i < 40:
+    #     print("black : " + kata.play_black())
+    #     # print(kata.showboard()[1:11])
+    #     tmp = kata.play_white()
+    #     if tmp == "RESIGN":
+    #         count += 1
+    #     print(f'white : {str(tmp)}')
+    #     print(kata.analyze())
+    #     # if count >2 or tmp == "PASS":
+    #     #     print(kata.final_score())
+    #     #     break
+    #     # if tmp == "PASS":
+    #     #     print(kata.final_score())
+    #     #     break
+    #     # print(type(kata.play_))
+    #     # print(kata.showboard()[1:11])
     #     i +=1
+    i = 0
+    while i < 5:
+        kata.play_black()
+        print(kata.check_board())
+        kata.play_white()
+        print(kata.check_board())
+        i +=1
 
 
     # 사용 후 자원 정리

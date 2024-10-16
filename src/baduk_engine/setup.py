@@ -21,7 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'solo_play = baduk_engine.solo_play_engine:main',
-            'fight_ai = baduk_engine.fight_ai:main'
+            'fight_ai = baduk_engine.fight_ai:main',
+            'fight_oth_ai = baduk_engine.fight_oth_ai:main'
         ],
     },
 )

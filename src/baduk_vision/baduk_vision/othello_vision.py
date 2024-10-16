@@ -48,7 +48,7 @@ class OthelloVision(Node):
         self.check_color = False
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = YOLO(os.path.join(project_path, 'model/best.pt'), task='classify') # YOLOv8-cls
+        self.model = YOLO(os.path.join(project_path, 'model/othello.pt'), task='classify') # YOLOv8-cls
         self.model = self.model.to(self.device)
 
         # Service for do_initialize client
@@ -69,7 +69,7 @@ class OthelloVision(Node):
         self.game_state = "."*64
         self.game_state_prev = "."*64
 
-        self.cornerPoints = np.float32([[499, 262], [927, 233], [1001, 642], [443, 652]])
+        self.cornerPoints = np.float32([(521, 401), (951, 383), (1048, 813), (464, 817)])
         self.start_flag = True
 
         # check_vision topic subscriber

@@ -23,6 +23,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/AddTwoInts.srv"
   "msg/Finish.msg"
   "msg/Point.msg"
+  "msg/Othello.msg"
+  "msg/PointOth.msg"
 )
 
 if(BUILD_TESTING)
