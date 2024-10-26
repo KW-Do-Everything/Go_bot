@@ -1,10 +1,11 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import TimerAction
 
 def generate_launch_description():
     
     return LaunchDescription([
-        # 첫 번째 USB 카메라 노드 (예: /dev/video0)
+        
         Node(
             package="usb_cam",
             executable="usb_cam_node_exe",
@@ -17,10 +18,11 @@ def generate_launch_description():
                 'image_width': 1280,
                 'image_height': 960,
                 'pixel_format': 'mjpeg2rgb',
-                'camera_name': 'usb_cam0'
+                'camera_name': 'usb_cam0',
+                'brightness' : 0
             }],
         ),
-        # 두 번째 USB 카메라 노드 (예: /dev/video1)
+        
         Node(
             package="usb_cam",
             executable="usb_cam_node_exe",
@@ -33,10 +35,11 @@ def generate_launch_description():
                 'image_width': 1280,
                 'image_height': 960,
                 'pixel_format': 'mjpeg2rgb',
-                'camera_name': 'usb_cam1'
+                'camera_name': 'usb_cam1',
+                'brightness' : 0
             }],
         ),
-        
+            
         Node(
             package="baduk_vision",
             executable="server_listener",

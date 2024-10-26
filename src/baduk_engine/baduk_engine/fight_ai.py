@@ -17,7 +17,7 @@ class GoGameProcessor(Node):
 
         self.subscriber = self.create_subscription(
             State,
-            'game_state',
+            'baduk_state',
             self.state_listener_callback,
             10
         ) 
@@ -210,6 +210,7 @@ class GoGameProcessor(Node):
                 )
             )
 
+            game_state.game = 'baduk'
             self.publisher_1.publish(game_state) # 게임 상태 publishing 보내고,
 
 

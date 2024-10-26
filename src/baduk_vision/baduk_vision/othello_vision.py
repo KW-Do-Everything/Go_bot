@@ -65,6 +65,11 @@ class OthelloVision(Node):
         # Publisher for game_state
         self.statePublisher = self.create_publisher(
             State,
+            'othello_state',
+            10
+        )
+        self.state2Server = self.create_publisher(
+            State,
             'game_state',
             10
         )
@@ -72,7 +77,7 @@ class OthelloVision(Node):
         self.game_state = "."*64
         self.game_state_prev = "."*64
 
-        self.cornerPoints = np.float32([(523, 402), (953, 382), (1047, 813), (462, 814)])
+        self.cornerPoints = np.float32([(346, 280), (806, 269), (850, 720), (261, 724)])
         self.start_flag = True
 
         # check_vision topic subscriber
@@ -139,7 +144,7 @@ class OthelloVision(Node):
                     img_transformed = perspective(self.cornerPoints, self.img)  # 시점변환
                     self.game_state = othello_color_classifier(img_transformed, self.model, self.points)  # 색 검출 
                     
-                self.get_logger().info("state: "+ self.game_state)
+                # self.get_logger().info("state: "+ self.game_state)
 
             self.prev_gray = self.gray
             
@@ -233,15 +238,16 @@ class OthelloVision(Node):
 
         # ROS message ver.
         # If you want to use the ROS version, uncomment the following code and comment out the AI Server socket communication version code.
-        # msg = State()
+        msg = State()
 
-        # # self.game_state는 카메라 입장에서본 상황.
-        # # 퍼블리시 할때는 사용자 입장에서본 상황을 주고 싶음. -> 문자열을 통째로 뒤집기
-        # msg.state = self.game_state[:: -1]
-        # msg.game = 'othello'
+        # self.game_state는 카메라 입장에서본 상황.
+        # 퍼블리시 할때는 사용자 입장에서본 상황을 주고 싶음. -> 문자열을 통째로 뒤집기
+        msg.state = self.game_state[:: -1]
+        msg.game = 'othello'
 
-        # self.statePublisher.publish(msg)
-        # #self.get_logger().info(f'{msg.state}')
+        self.statePublisher.publish(msg)
+        self.state2Server.publish(msg)
+        #self.get_logger().info(f'{msg.state}')
 
 
 def main(args=None):

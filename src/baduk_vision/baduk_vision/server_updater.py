@@ -15,15 +15,16 @@ class ServerUpdater(Node):
             'game_state_topic',
             self.ai_listener_callback,
             10
-        )
+        )   # AI 업데이트 용
 
-        self.last_state_msg = "."*361
+        self.last_state_msg = "."*81
         self.subscriber1 = self.create_subscription(
             State,
             'game_state',
             self.state_listener_callback,
             10
         )
+
 
     def ai_listener_callback(self, msg):
         # update when data changed

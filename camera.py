@@ -16,7 +16,7 @@ def mouse_callback(event, x, y, flags, param):
             cv2.destroyAllWindows()  # 창 닫기
 
 # 웹캠 설정
-webcam = cv2.VideoCapture(0)  # 웹캠 번호 설정 (0, 1, 2 등으로 변경 가능)
+webcam = cv2.VideoCapture(4)  # 웹캠 번호 설정 (0, 1, 2 등으로 변경 가능)
 webcam.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # 프레임 너비 설정
 webcam.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)  # 프레임 높이 설정
 

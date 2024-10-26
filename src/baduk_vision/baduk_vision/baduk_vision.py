@@ -24,6 +24,7 @@ pathlib.WindowsPath = pathlib.PosixPath
 
 import asyncio
 import websockets
+# import roslibpy
 
 home_dir = os.path.expanduser("~")
 project_path = os.path.join(home_dir, "Go_bot")
@@ -65,6 +66,11 @@ class BadukVision(Node):
         # Publisher for game_state
         self.statePublisher = self.create_publisher(
             State,
+            'baduk_state',
+            10
+        )
+        self.state2Server = self.create_publisher(
+            State,
             'game_state',
             10
         )
@@ -72,7 +78,7 @@ class BadukVision(Node):
         self.game_state = "."*81
         self.game_state_prev = "."*81
 
-        self.cornerPoints = np.float32([[560, 317], [955, 343], [1003, 762], [473, 710]])
+        self.cornerPoints = np.float32([(572, 136), (942, 140), (950, 516), (528, 495)])
         self.start_flag = True
 
         # check_vision topic subscriber
@@ -85,7 +91,8 @@ class BadukVision(Node):
         self.check_vision = True
 
         self.loop = asyncio.get_event_loop()
-
+        # self.ros = roslibpy.Ros(host='qlak315.iptime.org', port=20310)
+        # self.ros.run()
 
     # 이미지가 들어오는 이미지 구독 노드
     def image_callback(self, msg):
@@ -114,7 +121,7 @@ class BadukVision(Node):
             # else:
             #     self.check_color = True
             
-            if np.max(flow) > 3: #1.5:
+            if np.max(flow) > 1.2: #1.5:
                 self.check_color = False
                 self.get_logger().info(f'Motion Detected!')
             else:
@@ -184,7 +191,7 @@ class BadukVision(Node):
                 y2 = int(y0 - 1000 * (a))
                 cv2.line(line_img, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-            cv2.imwrite(os.path.join(project_path, "detected_lines.png"), line_img)  # 라인 검출 결과 이미지 저장
+            cv2.imwrite(os.path.join(project_path, "b_detected_lines.png"), line_img)  # 라인 검출 결과 이미지 저장
 
 
             # 이미지에 교점을 찍어서 저장 (확인용)
@@ -214,33 +221,35 @@ class BadukVision(Node):
         
         server_uri = 'qlak315.iptime.org:20310'
         data = {
-            'game': 'othello',
+            'game': 'baduk',
             'state': self.game_state
         }
 
-        async def send_to_server():
-            try:
-                # websocket 연결
-                async with websockets.connect(server_uri) as websocket:
-                    json_data = json.dumps(data)
-                    await websocket.send(json_data)
+        # async def send_to_server():
+        #     try:
+        #         # websocket 연결
+        #         async with websockets.connect(server_uri) as websocket:
+        #             json_data = json.dumps(data)
+        #             await websocket.send(json_data)
+        #             self.get_logger().error(f"success to send data to Server")
 
-            except Exception as e:
-                self.get_logger().error(f"Failed to send data to Server: {e}")
+        #     except Exception as e:
+        #         self.get_logger().error(f"Failed to send data to Server: {e}")
 
-        self.loop.create_task(send_to_server)
+        # self.loop.create_task(send_to_server())
 
         # ROS message ver.
         # If you want to use the ROS version, uncomment the following code and comment out the AI Server socket communication version code.
-        # msg = State()
+        msg = State()
 
-        # # self.game_state는 카메라 입장에서본 상황.
-        # # 퍼블리시 할때는 사용자 입장에서본 상황을 주고 싶음. -> 문자열을 통째로 뒤집기
-        # msg.state = self.game_state[:: -1]
-        # msg.game = 'baduk'
+        # self.game_state는 카메라 입장에서본 상황.
+        # 퍼블리시 할때는 사용자 입장에서본 상황을 주고 싶음. -> 문자열을 통째로 뒤집기
+        msg.state = self.game_state[:: -1]
+        msg.game = 'baduk'
 
-        # self.statePublisher.publish(msg)
-        # #self.get_logger().info(f'{msg.state}')
+        self.statePublisher.publish(msg)
+        self.state2Server.publish(msg)
+        #self.get_logger().info(f'{msg.state}')
 
 
 def main(args=None):
